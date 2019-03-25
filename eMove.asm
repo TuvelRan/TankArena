@@ -24,7 +24,10 @@ DATASEG
 	divisorTable db 10,1,0
 	Clock equ es:6Ch
 	EndMessage db 13,10,'$'
-	eTurnValue dw ?
+	eTurnValue db ?
+	eShotX dw ?
+	eShotY dw ?
+	color db 0078
 	
 ; ------------------------------
 
@@ -194,6 +197,44 @@ proc printCharacter
 	ret
 endp printCharacter
 
+proc randomMove
+	RandLoop:
+	; generate random number, cx number of times
+	mov ax, [Clock] 		; read timer counter
+	mov ah, [byte cs:bx] 	; read one byte from memory
+	xor al, ah 			; xor memory and counter
+	and al, 00000001b	; leave result between 0-15
+	add [eTurnValue], al
+	inc bx
+
+FirstTick: 
+	cmp ax, [Clock]
+	je FirstTick
+	; count 10 sec
+	mov cx, 9
+DelayLoop:
+	mov ax, [Clock]
+Tick:
+	cmp ax, [Clock]
+	je Tick
+	loop DelayLoop
+	cmp [eTurnValue], 1
+	je arrowRight
+	cmp [eTurnValue], 0
+	je arrowLeft
+	ret
+endp randomMove
+
+proc drawPixel
+	mov bh, 0h
+	mov cx, [eShotX]
+	mov dx, [eShotY]
+	mov al, [color]
+	mov ah, 0Ch
+	int 10h
+	ret
+endp drawPixel
+
 
 start:
 	mov ax, @data
@@ -204,15 +245,15 @@ start:
 	; Entering graphic mode:
 	mov ax, 13h
 	int 10h
+
+	; Print background:
+	call bmp
 	
 	; intializing:
 	mov ax, 40h
 	mov es, ax
-	mov cx, 10
+	mov cx, 1
 	mov bx, 0
-
-	; Print background:
-	call bmp
 
 	; Printing the character && getting the first pos:
 	mov [newEnemyPos], 320*10+142 ; Middle Screen
@@ -225,28 +266,19 @@ start:
 	call eOring
 
 checkKey:
-	; Get a key (1 symbol):
-	mov ah, 7h
-	int 21h
+	in al, 64h
+	cmp al, 10b
+	je checkKey
+	in al, 60h
 	; Check if esc key:
-	cmp al, 1Bh
+	cmp al, 1h
 	je endProgram
-
-RandLoop:
-	; generate random number, cx number of times
-	mov ax, [Clock] 		; read timer counter
-	mov ah, [byte cs:bx] 	; read one byte from memory
-	xor al, ah 			; xor memory and counter
-	and al, 00000001b 		; leave result between 0-15
-	inc bx
-	mov [eTurnValue], bx
-	cmp [eTurnValue], 01
-	je arrowRight
-	cmp [eTurnValue], 00
-	je arrowLeft
-	jmp checkKey
+	
+goRandom:
+	call randomMove
 
 arrowRight:
+	mov [eTurnValue], 0
 	cmp [enemyX], 320-60
 	jae	checkKey
 	add [enemyX], 40
@@ -254,12 +286,18 @@ arrowRight:
 	jmp checkKey
 
 arrowLeft:
+	mov [eTurnValue], 0
 	sub [newEnemyPos], 25
 	cmp [enemyX], 60
 	jbe	checkKey
 	sub [enemyX], 40
 	call eMoveWithSqr
 	jmp checkKey
+	
+enemyShoot:
+	mov bx, [enemyX]
+	mov [eShotX], bx
+	; Continue shooting
 	
 endProgram:
 	; Entering text mode
