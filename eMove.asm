@@ -7,6 +7,7 @@ DATASEG
 ; ------------------------------
 
 	include "eTank.asm" ; Character file handler
+	include "eShot.asm" ; Enemy shot file handler
 	newEnemyPos		dw	?
 	oldEnemyPos		dw	?
 	enemyX			dw	?
@@ -33,6 +34,7 @@ DATASEG
 
 CODESEG
 	include "openFile.asm"
+	include "eShotMov.asm"
 	
 proc eAnding
 	doPush ax, es, di, si, cx
@@ -122,20 +124,20 @@ proc eRetSqr
 	mov si, offset scrKeep
 	mov cx, [eTankHeight]
 	
-retLine:
+retLine3:
 	push cx
 	mov cx, [eTankWidth]
 	
-retCol:
+retCol3:
 	mov al, [si]
 	mov [es:di], al
 	inc si
 	inc di
-	loop retCol
+	loop retCol3
 	add di, 320
 	sub di, [eTankWidth]
 	pop cx
-	loop retLine
+	loop retLine3
 	doPop cx, di, si, ax, es
 	ret
 endp eRetSqr
@@ -203,14 +205,13 @@ proc randomMove
 	mov ax, [Clock] 		; read timer counter
 	mov ah, [byte cs:bx] 	; read one byte from memory
 	xor al, ah 			; xor memory and counter
-	and al, 00000001b	; leave result between 0-15
+	and al, 00000010b	; leave result between 0-15
 	add [eTurnValue], al
 	inc bx
 
 FirstTick: 
 	cmp ax, [Clock]
 	je FirstTick
-	; count 10 sec
 	mov cx, 9
 DelayLoop:
 	mov ax, [Clock]
@@ -218,29 +219,13 @@ Tick:
 	cmp ax, [Clock]
 	je Tick
 	loop DelayLoop
-	cmp [eTurnValue], 1
-	je arrowRight
-	cmp [eTurnValue], 0
-	je arrowLeft
+	jmp controlls
 	ret
 endp randomMove
-
-proc drawPixel
-	mov bh, 0h
-	mov cx, [eShotX]
-	mov dx, [eShotY]
-	mov al, [color]
-	mov ah, 0Ch
-	int 10h
-	ret
-endp drawPixel
-
 
 start:
 	mov ax, @data
 	mov ds, ax
-	
-; ------------------------------
 
 	; Entering graphic mode:
 	mov ax, 13h
@@ -254,7 +239,17 @@ start:
 	mov es, ax
 	mov cx, 1
 	mov bx, 0
+	jmp printCharacterEnemy
 
+controlls:
+	cmp [eTurnValue], 0
+	je arrowLeft
+	cmp [eTurnValue], 1
+	je arrowRight
+	cmp [eTurnValue], 2
+	je enemyShoot
+
+printCharacterEnemy:
 	; Printing the character && getting the first pos:
 	mov [newEnemyPos], 320*10+142 ; Middle Screen
 	call eTakeSqr ; Take the first square before printing the character
@@ -276,6 +271,16 @@ checkKey:
 	
 goRandom:
 	call randomMove
+	
+enemyShoot:
+	mov [eTurnValue], 0
+	mov [newShotPos], 320*10+142
+	call eShotTakeSqr
+	mov [oldShotPos], 320*10+142
+	mov [eShotX], 142
+	mov [eShotY], 10
+	call eShotAnding
+	call eShotOring
 
 arrowRight:
 	mov [eTurnValue], 0
@@ -293,11 +298,6 @@ arrowLeft:
 	sub [enemyX], 40
 	call eMoveWithSqr
 	jmp checkKey
-	
-enemyShoot:
-	mov bx, [enemyX]
-	mov [eShotX], bx
-	; Continue shooting
 	
 endProgram:
 	; Entering text mode
