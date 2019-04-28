@@ -206,9 +206,8 @@ proc randomMove
 	mov ah, [byte cs:bx] 	; read one byte from memory
 	xor al, ah 			; xor memory and counter
 	and al, 00000010b	; leave result between 0-15
-	add [eTurnValue], al
+	mov [eTurnValue], al
 	inc bx
-
 FirstTick: 
 	cmp ax, [Clock]
 	je FirstTick
@@ -223,7 +222,7 @@ Tick:
 	ret
 endp randomMove
 
-start:
+eStart:
 	mov ax, @data
 	mov ds, ax
 
@@ -239,18 +238,9 @@ start:
 	mov es, ax
 	mov cx, 1
 	mov bx, 0
-	jmp printCharacterEnemy
-
-controlls:
-	cmp [eTurnValue], 0
-	je arrowLeft
-	cmp [eTurnValue], 1
-	je arrowRight
-	cmp [eTurnValue], 2
-	je enemyShoot
 
 printCharacterEnemy:
-	; Printing the character && getting the first pos:
+	; Printing the character && getting the first position:
 	mov [newEnemyPos], 320*10+142 ; Middle Screen
 	call eTakeSqr ; Take the first square before printing the character
 	mov [oldEnemyPos], 320*10+142 ; Middle Screen
@@ -259,6 +249,15 @@ printCharacterEnemy:
 	; Printing the sprite:
 	call eAnding
 	call eOring
+	jmp goRandom
+	
+controlls:
+	cmp [eTurnValue], 0
+	je arrowLeft
+	cmp [eTurnValue], 1
+	je arrowRight
+	cmp [eTurnValue], 2
+	je enemyShoot
 
 checkKey:
 	in al, 64h
@@ -273,17 +272,21 @@ goRandom:
 	call randomMove
 	
 enemyShoot:
-	mov [eTurnValue], 0
-	mov [newShotPos], 320*10+142
+	push bx
+	mov bx, [newEnemyPos]
+	mov [newShotPos], bx
 	call eShotTakeSqr
-	mov [oldShotPos], 320*10+142
-	mov [eShotX], 142
-	mov [eShotY], 10
+	mov bx, [oldEnemyPos]
+	mov [oldShotPos], bx
+	mov bx, [enemyX]
+	mov [eShotX], bx
+	mov bx, [enemyY]
+	mov [eShotY], bx
+	pop bx
 	call eShotAnding
 	call eShotOring
 
 arrowRight:
-	mov [eTurnValue], 0
 	cmp [enemyX], 320-60
 	jae	checkKey
 	add [enemyX], 40
@@ -291,7 +294,6 @@ arrowRight:
 	jmp checkKey
 
 arrowLeft:
-	mov [eTurnValue], 0
 	sub [newEnemyPos], 25
 	cmp [enemyX], 60
 	jbe	checkKey
@@ -313,4 +315,4 @@ endProgram:
 exit:
 	mov ax, 4c00h
 	int 21h
-END start
+END eStart
