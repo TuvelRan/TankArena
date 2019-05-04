@@ -2,6 +2,7 @@
 		include "eShot.asm" ; Enemy shot file handler
 		include "pTank.asm" ; Character file handler
 		include "pShot.asm" ; Players Shot file handler
+		include "pointer.asm" ; Main screen pointer
 		newEnemyPos		dw	?
 		oldEnemyPos		dw	?
 		enemyX			dw	?
@@ -50,3 +51,15 @@
 		youLost			db 'You Lost! LOSER!!!$'
 		playerHPtxt		db 'HP: ','$'
 		enemyHPtxt		db 'HP: ','$'
+		shotWait		db 3
+		pShotOn			db 0
+		eShotOn			db 0
+		cursorWidth		db 9
+		cursorHeight	db 5
+		mainScrFile		db 'mainScr.bmp',0
+		pointerX		dw ?
+		pointerY		dw ?
+		helpScrFile		db 'helpScr.bmp',0
+		delayAmount		db ?
+		timer1			db ?
+		timer2			db ?

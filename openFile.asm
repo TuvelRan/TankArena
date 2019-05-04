@@ -4,7 +4,6 @@ proc OpenFile
 ;exit - Open file, put handle in filehandle
 	mov ah, 3Dh
 	xor al, al
-	mov dx, offset filename
 	int 21h
 	jc openerror
 	mov [filehandle], ax

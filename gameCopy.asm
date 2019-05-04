@@ -12,7 +12,7 @@ DATASEG
 
 CODESEG
 	include "openFile.asm"
-	include "procs.asm"
+	include "procsC.asm"
 
 start:
 	mov ax, @data
@@ -24,7 +24,52 @@ start:
 	mov ax, 13h
 	int 10h
 
+mainScr:
+	mov dx, offset mainScrFile
+	call bmp
+	
+reciveInput:
+	; Get a key (1 symbol):
+	mov ah, 7h
+	int 21h
+	; Check if p key:
+	cmp al, 50h
+	je gameScr
+	cmp al, 70h
+	je gameScr
+	; Check if i key:
+	cmp al, 49h
+	je helpScr
+	cmp al, 69h
+	je helpScr
+	; Check if s key:
+	cmp al, 53h
+	je scoreList
+	cmp al, 73h
+	je scoreList
+	; Check if esc key:
+	cmp al, 1Bh
+	je goEndProgram2
+	jmp reciveInput
+	
+goEndProgram2:
+	jmp endProgram
+	
+helpScr:
+	mov dx, offset helpScrFile
+	call bmp
+	; Get a key (1 symbol):
+	mov ah, 7h
+	int 21h
+	cmp al, 1Bh
+	je mainScr
+	jmp helpScr
+
+scoreList:
+	
+gameScr:
 	; Print background:
+	mov dx, offset filename
 	call bmp
 	
 	; initializing:
@@ -81,16 +126,18 @@ showEnemysHP:
 	call printNumber
 
 mainLoop:
-; The main code loop to run everything	
-	
-    mov ah,0Bh
+; The main code loop to run everything
+
+checkKey:
+	; Check if there is any key
+	mov ah,0Bh
 	int 21h
 	cmp al,0FFh ; If there is any key go to contGetKey
 	je contGetKey
 	mov ah,0Ch
 	mov al,0
 	int 21h
-
+	
 goRandom:
 	; Move the robot randomly to right or left
 	call randomMove
@@ -110,8 +157,11 @@ contGetKey:
 	je ifSpaceShoot
 	; Check if esc key:
 	cmp al, 1Bh
-	je goEndProgram
+	je gotoMainScr
 	jmp mainLoop
+	
+gotoMainScr:
+	jmp mainScr
 	
 goEndProgram:
 	; Shortcut to jump to label endProgram
@@ -123,9 +173,6 @@ arrowRight:
 	jae	mainLoop
 	add [x], 40
 	call movePlayer
-	mov ah,0Ch
-	mov al,0
-	int 21h
 	jmp mainLoop
 
 arrowLeft:
@@ -135,9 +182,6 @@ arrowLeft:
 	jbe	mainLoop
 	sub [x], 40
 	call movePlayer
-	mov ah,0Ch
-	mov al,0
-	int 21h
 	jmp mainLoop
 
 ifSpaceShoot:
@@ -151,7 +195,7 @@ controlls:
 	; if got 0 move enemy to left
 	cmp [eTurnValue], 0
 	je enemyLeft
-	; if got 1 move enemy to left
+	; if got 1 move enemy to right
 	cmp [eTurnValue], 1
 	je enemyRight
 	; if got 2 enemy Shoot!

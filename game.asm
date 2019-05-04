@@ -24,7 +24,52 @@ start:
 	mov ax, 13h
 	int 10h
 
+mainScr:
+	mov dx, offset mainScrFile
+	call bmp
+	
+reciveInput:
+	; Get a key (1 symbol):
+	mov ah, 7h
+	int 21h
+	; Check if p key:
+	cmp al, 50h
+	je gameScr
+	cmp al, 70h
+	je gameScr
+	; Check if i key:
+	cmp al, 49h
+	je helpScr
+	cmp al, 69h
+	je helpScr
+	; Check if s key:
+	cmp al, 53h
+	je scoreList
+	cmp al, 73h
+	je scoreList
+	; Check if esc key:
+	cmp al, 1Bh
+	je goEndProgram2
+	jmp reciveInput
+	
+goEndProgram2:
+	jmp endProgram
+	
+helpScr:
+	mov dx, offset helpScrFile
+	call bmp
+	; Get a key (1 symbol):
+	mov ah, 7h
+	int 21h
+	cmp al, 1Bh
+	je mainScr
+	jmp helpScr
+
+scoreList:
+	
+gameScr:
 	; Print background:
+	mov dx, offset filename
 	call bmp
 	
 	; initializing:
@@ -81,7 +126,7 @@ showEnemysHP:
 	call printNumber
 
 mainLoop:
-; The main code loop to run everything	
+; The main code loop to run everything
 
 checkKey:
 	; Check if there is any key
@@ -112,8 +157,11 @@ contGetKey:
 	je ifSpaceShoot
 	; Check if esc key:
 	cmp al, 1Bh
-	je goEndProgram
+	je gotoMainScr
 	jmp mainLoop
+	
+gotoMainScr:
+	jmp mainScr
 	
 goEndProgram:
 	; Shortcut to jump to label endProgram
@@ -147,7 +195,7 @@ controlls:
 	; if got 0 move enemy to left
 	cmp [eTurnValue], 0
 	je enemyLeft
-	; if got 1 move enemy to left
+	; if got 1 move enemy to right
 	cmp [eTurnValue], 1
 	je enemyRight
 	; if got 2 enemy Shoot!
