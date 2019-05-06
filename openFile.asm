@@ -2,6 +2,7 @@
 proc OpenFile
 ;enter – file name in filename
 ;exit - Open file, put handle in filehandle
+	mov dx,[fileName]
 	mov ah, 3Dh
 	xor al, al
 	int 21h
@@ -34,7 +35,7 @@ proc ReadHeader
 endp ReadHeader
 
 proc ReadPalette
-; Read BMP file color palette, 256 ; colors * 4 bytes (400h)
+; Read BMP file color palette, 256 ; colors * 4 bytes (400h)
     mov ah,3fh
     mov bx, [filehandle]
     mov cx , 400h 
