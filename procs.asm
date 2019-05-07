@@ -275,7 +275,11 @@ refreshEnemyHPtxt:
 	jmp returnFromShot
 	
 enemyDead:
-	jmp endProgram
+	mov ah,0Ch
+	mov al,0
+	int 21h
+	doPop dx,cx,bx,ax
+	jmp wonScr
 	
 returnFromShot:
 	mov [shotLength], 10

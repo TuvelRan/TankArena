@@ -32,6 +32,8 @@ start:
 mainScr:
 	mov [fileName], offset mainScrFile
 	call bmp
+	mov [playerHP], 3
+	mov [enemyHP], 3
 	
 reciveInput:
 	; Get a key (1 symbol):
@@ -62,19 +64,50 @@ goEndProgram2:
 helpScr:
 	mov [fileName], offset helpScrFile
 	call bmp
+getHelpInput:
 	; Get a key (1 symbol):
 	mov ah, 7h
 	int 21h
+	; Check if p key
+	cmp al, 50h
+	je gameScr
+	cmp al, 70h
+	je gameScr
 	; Check if esc key
 	cmp al, 1Bh
 	je mainScr
-	jmp helpScr
+	jmp getHelpInput
 
 scoreList:
+
+pauseScr:
+	mov [fileName], offset pauseFile
+	call bmp
+getPauseInput:
+	; Get a key (1 symbol):
+	mov ah, 7h
+	int 21h
+	; Check if ESC key
+	cmp al, 1Bh
+	je gameScr
+	; Check if r key
+	cmp al, 72h
+	je restartGame
+	cmp al, 52h
+	je restartGame
+	cmp al, 45h
+	je mainScr
+	cmp al, 65h
+	je mainScr
+	jmp getPauseInput
+	
+restartGame:
+	mov [playerHP], 3
+	mov [enemyHP], 3
 	
 gameScr:
 	; Print background:
-	mov [fileName], offset mainfilename
+	mov [fileName], offset gameBack
 	call bmp
 	
 	; initializing:
@@ -131,6 +164,8 @@ showEnemysHP:
 	xor ax, ax
 	mov al, [enemyHP]
 	call printNumber
+	
+	mov [shotLength], 10
 
 mainLoop:
 ; The main code loop to run the gameplay
@@ -165,11 +200,11 @@ contGetKey:
 	je ifSpaceShoot
 	; Check if esc key:
 	cmp ah, 01h
-	je gotoMainScr
+	je gotoPause
 	jmp mainLoop
 	
-gotoMainScr:
-	jmp mainScr
+gotoPause:
+	jmp pauseScr
 	
 goEndProgram:
 	; Shortcut to jump to label endProgram
@@ -233,6 +268,22 @@ enemyShoot:
 	call eMoveShot
 	call eShotRetSqr
 	jmp mainLoop
+	
+wonScr:
+	mov [fileName], offset wonFile
+	call bmp
+	; Wait for any key
+	mov ax, 13
+	int 16h
+	jmp mainScr
+	
+youLostScr:
+	mov [fileName], offset lostFile
+	call bmp
+	; Wait for any key
+	mov ax, 13
+	int 16h
+	jmp mainScr
 	
 gotoMain:
 	; Shortcut to mainLoop

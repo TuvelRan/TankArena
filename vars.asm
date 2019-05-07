@@ -11,7 +11,7 @@
 		eTankWidth		dw	21 ; My tank width
 		scrKeep			db	99*57 dup(?) ; Keeping the screen of the oldPos for The player
 		eScrKeep		db	99*57 dup(?) ; Keeping the screen of the oldPos for The robot
-		mainfilename 	db 'gameBack.bmp',0 ; The bmp file for the gameplay background
+		gameBack 		db 'gameBack.bmp',0 ; The bmp file for the gameplay background
 		fileName		dw  ?
 		filehandle 		dw ? ; file handle for BMP image
 		Header 			db 54 	dup (0) ; Header for bmp image
@@ -54,8 +54,11 @@
 		eShotOn			db 0 ; Not in use currently
 		mainScrFile		db 'mainScr.bmp',0 ; MainScreen file name to load
 		helpScrFile		db 'helpScr.bmp',0 ; Instructions file name to load
-		delayAmount		db ? ; Not in use currently
-		timer1			db ? ; Not in use currently
-		timer2			db ? ; Not in use currently
+		delayAmount		db ? ; Delay variable
 		note			dw 2000h
 		moveEnemyTank	dw 250
+		pauseFile		db 'pauseScr.bmp',0
+		wonFile			db 'winScr.bmp',0
+		cDelayAmount	dw ?
+		lostFile		db 'lostScr.bmp',0
+		hardLvlFile		db 'hardLvl.bmp',0
