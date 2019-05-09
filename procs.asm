@@ -436,3 +436,76 @@ proc stopSound
 	pop ax
 	ret
 endp stopSound
+
+proc clockDelay
+	doPush ax,cx
+	; initializing:
+	mov ax, 40h
+	mov es, ax
+	mov cx, 1
+	mov bx, 0
+FirstTick: 
+	cmp ax, [Clock]
+	je FirstTick
+	mov cx, [cDelayAmount]
+DelayLoop:
+	mov ax, [Clock]
+Tick:
+	cmp ax, [Clock]
+	je Tick
+	loop DelayLoop
+	doPop ax,cx
+	ret
+endp clockDelay
+
+proc hardLvlStart
+	mov [fileName], offset getRdy2File
+	call bmp
+	mov [note], 7000h
+	call playSound
+	mov [cDelayAmount], 3
+	call clockDelay
+	call stopSound
+	call clockDelay
+	mov [note], 4000h
+	call playSound
+	mov [cDelayAmount], 3
+	call clockDelay
+	call stopSound
+	call clockDelay
+	mov [fileName], offset rdyGo2File
+	call bmp
+	mov [note], 2500h
+	call playSound
+	mov [cDelayAmount], 3
+	call clockDelay
+	call stopSound
+	call clockDelay
+	ret
+endp hardLvlStart
+
+proc normalLvlStart
+	mov [fileName], offset getRdy1File
+	call bmp
+	mov [note], 7000h
+	call playSound
+	mov [cDelayAmount], 3
+	call clockDelay
+	call stopSound
+	call clockDelay
+	mov [note], 4000h
+	call playSound
+	mov [cDelayAmount], 3
+	call clockDelay
+	call stopSound
+	call clockDelay
+	mov [fileName], offset rdyGo1File
+	call bmp
+	mov [note], 2500h
+	call playSound
+	mov [cDelayAmount], 3
+	call clockDelay
+	call stopSound
+	call clockDelay
+	ret
+endp normalLvlStart

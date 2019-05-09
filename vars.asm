@@ -59,10 +59,15 @@
 		moveEnemyTank	dw 250
 		pauseFile		db 'pauseScr.bmp',0
 		wonFile			db 'winScr.bmp',0
-		cDelayAmount	dw ?
+		cDelayAmount	dw 0
 		lostFile		db 'lostScr.bmp',0
 		hardLvlFile		db 'hardLvl.bmp',0
 		moveHardEnemyTank	dw 200
 		selectedLvl		db 0
 		selectLvlFile	db 'selector.bmp',0
 		moveEnemyTankSpeed	dw	?
+		getRdy1File		db 'getRdy1.bmp',0
+		rdyGo1File		db 'rdyGo1.bmp',0
+		getRdy2File		db 'getRdy2.bmp',0
+		rdyGo2File		db 'rdyGo2.bmp',0
+		tryAgainFile	db 'tryAgain.bmp',0

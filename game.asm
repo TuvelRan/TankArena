@@ -9,7 +9,7 @@ DATASEG
 	include "vars.asm" ; All variables for project
 	
 	
-	stam		dw 9999
+	InputTime		dw 9999
 	
 ; ------------------------------
 
@@ -34,7 +34,6 @@ mainScr:
 	call bmp
 	mov [playerHP], 3
 	mov [enemyHP], 3
-	mov [selectedLvl], 0
 	
 reciveInput:
 	; Get a key (1 symbol):
@@ -122,7 +121,7 @@ getPauseInput:
 	int 21h
 	; Check if ESC key
 	cmp al, 1Bh
-	je level1Scr
+	je resumeToLvl
 	; Check if r key
 	cmp al, 72h
 	je restartGame
@@ -133,10 +132,51 @@ getPauseInput:
 	je gotoMainScr
 	cmp al, 65h
 	je gotoMainScr
+	; Check if c key
+	cmp al, 43h
+	je gotoSelectLvl
+	cmp al, 63h
+	je gotoSelectLvl
 	jmp getPauseInput
+	
+gotoSelectLvl:
+	jmp selectLvlScr
+	
+resumeToLvl:
+	cmp [selectedLvl], 1
+	je printMap1
+	cmp [selectedLvl], 2
+	je printMap2
 	
 gotoMainScr:
 	jmp mainScr
+	
+tryAgainScr:
+	mov [fileName], offset tryAgainFile
+	call bmp
+tryAgainInput:
+	; Get a symbol input:
+	mov ah, 7h
+	int 21h
+	; Check if p key:
+	cmp al, 50h
+	je level1Scr
+	cmp al, 70h
+	je level1Scr
+	; Check if c key:
+	cmp al, 43h
+	je gotoSelectLvlScr
+	cmp al, 63h
+	je gotoSelectLvlScr
+	; Check if e key:
+	cmp al, 45h
+	je gotoMainScr
+	cmp al, 65h
+	je gotoMainScr
+	jmp tryAgainInput
+	
+gotoSelectLvlScr:
+	jmp selectLvlScr
 	
 restartGame:
 	mov [playerHP], 3
@@ -145,16 +185,23 @@ restartGame:
 level1Scr:
 	
 	cmp [selectedLvl], 1
-	je printMap1
-
-	; Print background:
+	je startMap1
+	
+startMap2:
+	call hardLvlStart
+	mov [playerHP], 1
+	mov [enemyHP], 5
+	
 printMap2:
 	mov [fileName], offset hardLvlFile
 	call bmp
-	mov [playerHP], 1
-	mov [enemyHP], 5
 	jmp startGame
-	
+
+startMap1:
+	call normalLvlStart
+	mov [playerHP], 3
+	mov [enemyHP], 3
+
 printMap1:
 	mov [fileName], offset gameBack
 	call bmp
@@ -218,16 +265,16 @@ showEnemysHP:
 
 level1:
 ; The main code loop to run the gameplay
-	dec [stam]
+	dec [InputTime]
 checkKey:
 	; Check if there is any key
 	mov ah,1
 	int 16h
 	jnz contGetKey ; If there is any key go to contGetKey
-	cmp [stam],0
+	cmp [InputTime],0
 	jne level1
 goRandom:
-	mov [stam],9999
+	mov [InputTime],9999
 	; Move the robot randomly do actions
 	call randomMove
 	mov ax, [moveEnemyTankSpeed]
@@ -278,7 +325,7 @@ arrowLeft:
 	jmp level1
 
 ifSpaceShoot:
-	call enemyAvoidShot
+	;call enemyAvoidShot
 	call shotTakeSqr
 	call moveShot
 	call shotRetSqr
@@ -322,18 +369,24 @@ enemyShoot:
 wonScr:
 	mov [fileName], offset wonFile
 	call bmp
+	; Block spamming to skip the screen
+	mov [cDelayAmount], 20
+	call clockDelay
 	; Wait for any key
 	mov ax, 13
 	int 16h
-	jmp mainScr
+	jmp tryAgainScr
 	
 youLostScr:
 	mov [fileName], offset lostFile
 	call bmp
+	
+	mov [cDelayAmount], 20
+	call clockDelay
 	; Wait for any key
 	mov ax, 13
 	int 16h
-	jmp mainScr
+	jmp tryAgainScr
 	
 gotoMain:
 	; Shortcut to level1
