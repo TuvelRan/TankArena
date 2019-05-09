@@ -372,6 +372,9 @@ wonScr:
 	; Block spamming to skip the screen
 	mov [cDelayAmount], 20
 	call clockDelay
+	mov ah,0Ch
+	mov al,0
+	int 21h
 	; Wait for any key
 	mov ax, 13
 	int 16h
@@ -380,9 +383,12 @@ wonScr:
 youLostScr:
 	mov [fileName], offset lostFile
 	call bmp
-	
+	; Block spamming to skip the screen
 	mov [cDelayAmount], 20
 	call clockDelay
+	mov ah,0Ch
+	mov al,0
+	int 21h
 	; Wait for any key
 	mov ax, 13
 	int 16h
