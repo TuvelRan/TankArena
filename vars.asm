@@ -18,7 +18,7 @@
 		Palette 		db 256*4 dup (0) ; The color palette for bmp image
 		ScrLine 		db 320 dup (0) ; The Width of the screen (pixels for each line)
 		ErrorMsg 		db 'Error', 13, 10,'$' ; Error message if bmp couldn't be loaded
-		goodByeMsg 		db 'Hope you enjoyed. Goodbye!$' ; When closing the game this message will appear
+		goodByeMsg 		db 'Thank you for playing$' ; When closing the game this message will appear
 		divisorTable 	db 10,1,0 ; 
 		Clock 			equ es:6Ch ; Clock address in the memory
 		EndMessage 		db 13,10,'$'
@@ -49,7 +49,7 @@
 		eShotScrKeep	db 99*57 dup(?) ; enemy shot scrKeep
 		playerHPtxt		db 'HP: ','$' ; Variable for printing the player's HP
 		enemyHPtxt		db 'HP: ','$' ; Variable for printing the enemy's HP
-		shotWait		db 3 ; Counter of when equals to 0 enemy shoot and restore to 3
+		shotWait		db 1 ; Counter of when equals to 0 enemy shoot and restore to 3
 		pShotOn			db 0 ; Not in use currently
 		eShotOn			db 0 ; Not in use currently
 		mainScrFile		db 'mainScr.bmp',0 ; MainScreen file name to load
@@ -62,3 +62,7 @@
 		cDelayAmount	dw ?
 		lostFile		db 'lostScr.bmp',0
 		hardLvlFile		db 'hardLvl.bmp',0
+		moveHardEnemyTank	dw 200
+		selectedLvl		db 0
+		selectLvlFile	db 'selector.bmp',0
+		moveEnemyTankSpeed	dw	?

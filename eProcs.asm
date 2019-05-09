@@ -132,12 +132,15 @@ returnSqr:
 endp eMoveWithSqr
 
 proc randomMove
+	doPush ax,bx,cx
 	dec [moveEnemyTank]
 	cmp [moveEnemyTank], 0
 	jne return_fromRandomMove
 	
+	mov cx, [moveEnemyTankSpeed]
+	
 resetMovingValue:
-	mov [moveEnemyTank], 250
+	mov [moveEnemyTank], cx
 	
 RandLoop:
 	mov ax, 40h
@@ -151,6 +154,7 @@ RandLoop:
 	mov [eTurnValue], al
 	inc bx
 return_fromRandomMove:
+	doPop cx,bx,ax
 	ret
 endp randomMove
 
@@ -212,7 +216,17 @@ endp enemyAvoidShot
 proc eMoveShot
 	doPush ax,bx,cx,dx
 	
+	cmp [moveEnemyTankSpeed], 100
+	jne setShotCoords
+	
+countShotsDelay:
+	cmp [shotWait], 0
+	je setShotCoords
+	dec [shotWait]
+	jmp returnFromShot88
+	
 setShotCoords:
+	mov [shotWait], 1
 	mov dx, [enemyX]
 	mov [eShotX], dx
 	add [eShotX], 9

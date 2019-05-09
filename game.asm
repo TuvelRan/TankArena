@@ -34,6 +34,7 @@ mainScr:
 	call bmp
 	mov [playerHP], 3
 	mov [enemyHP], 3
+	mov [selectedLvl], 0
 	
 reciveInput:
 	; Get a key (1 symbol):
@@ -41,9 +42,9 @@ reciveInput:
 	int 21h
 	; Check if p key:
 	cmp al, 50h
-	je gameScr
+	je selectLvlScr
 	cmp al, 70h
-	je gameScr
+	je selectLvlScr
 	; Check if i key:
 	cmp al, 49h
 	je helpScr
@@ -56,7 +57,39 @@ reciveInput:
 	je scoreList
 	; Check if esc key:
 	cmp al, 1Bh
-	jne reciveInput
+	je goEndProgram2
+	jmp reciveInput
+	
+selectLvlScr:
+	mov [fileName], offset selectLvlFile
+	call bmp
+reciveSelectInput:
+	; Get a key (1 symbol):
+	mov ah, 7h
+	int 21h
+	; Check if n key:
+	cmp al, 6Eh
+	je setDifficultyChoose1
+	cmp al, 4Eh
+	je setDifficultyChoose1
+	; Check if h key:
+	cmp al, 68h
+	je setDifficultyChoose2
+	cmp al, 48h
+	je setDifficultyChoose2
+	cmp al, 1Bh
+	je mainScr
+	jmp reciveSelectInput
+	
+setDifficultyChoose1:
+	mov [selectedLvl], 1
+	mov [moveEnemyTankSpeed], 250
+	jmp level1Scr
+
+setDifficultyChoose2:
+	mov [selectedLvl], 2
+	mov [moveEnemyTankSpeed], 100
+	jmp level1Scr
 	
 goEndProgram2:
 	jmp endProgram
@@ -70,12 +103,12 @@ getHelpInput:
 	int 21h
 	; Check if p key
 	cmp al, 50h
-	je gameScr
+	je selectLvlScr
 	cmp al, 70h
-	je gameScr
+	je selectLvlScr
 	; Check if esc key
 	cmp al, 1Bh
-	je mainScr
+	je gotoMainScr
 	jmp getHelpInput
 
 scoreList:
@@ -89,27 +122,44 @@ getPauseInput:
 	int 21h
 	; Check if ESC key
 	cmp al, 1Bh
-	je gameScr
+	je level1Scr
 	; Check if r key
 	cmp al, 72h
 	je restartGame
 	cmp al, 52h
 	je restartGame
+	; Check if e key
 	cmp al, 45h
-	je mainScr
+	je gotoMainScr
 	cmp al, 65h
-	je mainScr
+	je gotoMainScr
 	jmp getPauseInput
+	
+gotoMainScr:
+	jmp mainScr
 	
 restartGame:
 	mov [playerHP], 3
 	mov [enemyHP], 3
 	
-gameScr:
+level1Scr:
+	
+	cmp [selectedLvl], 1
+	je printMap1
+
 	; Print background:
+printMap2:
+	mov [fileName], offset hardLvlFile
+	call bmp
+	mov [playerHP], 1
+	mov [enemyHP], 5
+	jmp startGame
+	
+printMap1:
 	mov [fileName], offset gameBack
 	call bmp
 	
+startGame:
 	; initializing:
 	mov ax, 40h
 	mov es, ax
@@ -126,7 +176,6 @@ gameScr:
 	call anding
 	call oring
 	
-printCharacterEnemy:
 	; Printing the character && getting the first position:
 	mov [newEnemyPos], 320*35+150 ; Middle Screen
 	call eTakeSqr ; Take the first square before printing the character
@@ -167,7 +216,7 @@ showEnemysHP:
 	
 	mov [shotLength], 10
 
-mainLoop:
+level1:
 ; The main code loop to run the gameplay
 	dec [stam]
 checkKey:
@@ -176,14 +225,15 @@ checkKey:
 	int 16h
 	jnz contGetKey ; If there is any key go to contGetKey
 	cmp [stam],0
-	jne mainLoop
+	jne level1
 goRandom:
 	mov [stam],9999
 	; Move the robot randomly do actions
 	call randomMove
-	cmp [moveEnemyTank],250
+	mov ax, [moveEnemyTankSpeed]
+	cmp [moveEnemyTank], ax
 	je controlls
-	jmp mainLoop
+	jmp level1
 	
 contGetKey:
 	; Get a key (1 symbol):
@@ -201,7 +251,7 @@ contGetKey:
 	; Check if esc key:
 	cmp ah, 01h
 	je gotoPause
-	jmp mainLoop
+	jmp level1
 	
 gotoPause:
 	jmp pauseScr
@@ -213,26 +263,26 @@ goEndProgram:
 arrowRight:
 	; Moving the player tank to right
 	cmp [x], 320-60
-	jae	mainLoop
+	jae	level1
 	add [x], 40
 	call movePlayer
-	jmp mainLoop
+	jmp level1
 
 arrowLeft:
 	; Moving the player tank to left
 	sub [newPos], 25
 	cmp [x], 60
-	jbe	mainLoop
+	jbe	level1
 	sub [x], 40
 	call movePlayer
-	jmp mainLoop
+	jmp level1
 
 ifSpaceShoot:
 	call enemyAvoidShot
 	call shotTakeSqr
 	call moveShot
 	call shotRetSqr
-	jmp mainLoop
+	jmp level1
 	
 controlls:
 	; if got 0 move enemy to left
@@ -252,7 +302,7 @@ enemyLeft:
 	jbe	gotoMain
 	sub [enemyX], 40
 	call eMoveWithSqr
-	jmp mainLoop
+	jmp level1
 
 enemyRight:
 	; Moving the enemy tank to right
@@ -260,14 +310,14 @@ enemyRight:
 	jae	gotoMain
 	add [enemyX], 40
 	call eMoveWithSqr
-	jmp mainLoop
+	jmp level1
 
 enemyShoot:
 	; Making the enemy tank to shoot
 	call eShotTakeSqr
 	call eMoveShot
 	call eShotRetSqr
-	jmp mainLoop
+	jmp level1
 	
 wonScr:
 	mov [fileName], offset wonFile
@@ -286,8 +336,8 @@ youLostScr:
 	jmp mainScr
 	
 gotoMain:
-	; Shortcut to mainLoop
-	jmp mainLoop
+	; Shortcut to level1
+	jmp level1
 	
 endProgram:
 	; Entering text mode
