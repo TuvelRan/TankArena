@@ -5,7 +5,7 @@ proc printNumber
 	mov bx,offset divisorTable
 nextDigit:
 	xor ah,ah 	; dx:ax = number
-	div [byte ptr bx]	 ; al = quotient, ah = remainder	
+	div [byte ptr bx]	 ; al = quotient, ah = remainder
 	add al,'0'
 	call printCharacter 	; Display the quotient
 	mov al,ah 	; ah = remainder
@@ -16,7 +16,7 @@ nextDigit:
 	mov dl,13
 	int 21h
 	mov dl,10
-	int 21h	
+	int 21h
 	doPop dx,bx,ax
 	ret
 endp printNumber
@@ -41,11 +41,11 @@ proc anding
 	mov di,[newPos]
 	mov si, offset pTankMask
 	mov cx,[tankHeight]
-	
+
 and1:
 	push cx
 	mov cx,[tankWidth]
-	
+
 xx1:
 	lodsb
 	and [es:di],al
@@ -68,11 +68,11 @@ proc oring
 	mov di,[newPos]
 	mov si, offset pTank
 	mov cx,[tankHeight]
-	
+
 or1:
 	push cx
 	mov cx,[tankWidth]
-	
+
 yy1:
 	lodsb
 	or [es:di],al
@@ -95,11 +95,11 @@ proc takeSqr
 	mov di, [newPos]
 	mov si, offset scrKeep
 	mov cx, [tankHeight]
-	
+
 takeLine1:
 	push cx
 	mov cx, [tankWidth]
-	
+
 takeCol1:
 	mov al, [es:di]
 	mov [si], al
@@ -123,11 +123,11 @@ proc retSqr
 	mov di,[oldPos]
 	mov si, offset scrKeep
 	mov cx, [tankHeight]
-	
+
 retLine:
 	push cx
 	mov cx, [tankWidth]
-	
+
 retCol:
 	mov al, [si]
 	mov [es:di], al
@@ -148,7 +148,7 @@ proc moveWithSqr
 	doPush bx, cx
 	mov bx, [x] ; The current position of X.
 	mov cx, [y] ; The times we will need to loop for rows.
-	
+
 createR1: ; Creating the row. Adding 320 to go to the next line
 	add bx, 320
 	loop createR1
@@ -170,7 +170,7 @@ proc movePlayer
 	; output: moving the character and restoring the background and taking the new square the character is going to
 	mov bx, [x] ; The current position of X.
 	mov cx, [y] ; The times we will need to loop for rows.
-	
+
 createR2: ; Creating the row. Adding 320 to go to the next line
 	add bx, 320
 	loop createR2
@@ -218,11 +218,11 @@ goMoving:
 	; output: moving the character and restoring the background and taking the new square the character is going to
 	mov bx, [shotX] ; The current position of X.
 	mov cx, [shotY] ; The times we will need to loop for rows.
-	
+
 createR12: ; Creating the row. Adding 320 to go to the next line
 	add bx, 320
 	loop createR12
-	
+
 	mov [delayAmount], 40
 	call delay
 
@@ -243,14 +243,14 @@ returnSqr12:
 	mov dx,[shotY]
 	mov ah,0Dh
 	int 10h
-	
+
 checkIfHit:
 	cmp al, 0077
 	je hitEnemy
 	cmp [shotLength], 0
 	je returnFromShot
 	jmp goMoving
-	
+
 hitEnemy:
 	mov [note], 2000h
 	call playSound
@@ -273,15 +273,16 @@ refreshEnemyHPtxt:
 	cmp [enemyHP], 0
 	je enemyDead
 	jmp returnFromShot
-	
+
 enemyDead:
 	mov ah,0Ch
 	mov al,0
 	int 21h
 	doPop dx,cx,bx,ax
 	jmp wonScr
-	
+
 returnFromShot:
+	inc [score]
 	mov [shotLength], 10
 	mov ah,0Ch
 	mov al,0
@@ -297,11 +298,11 @@ proc shotAnding
 	mov di,[newShotPos]
 	mov si, offset pShotMask
 	mov cx,[pShotHeight]
-	
+
 and5:
 	push cx
 	mov cx,[pShotWidth]
-	
+
 xx5:
 	lodsb
 	and [es:di],al
@@ -322,11 +323,11 @@ proc shotOring
 	mov di,[newShotPos]
 	mov si, offset pShot
 	mov cx,[pShotHeight]
-	
+
 or5:
 	push cx
 	mov cx,[pShotWidth]
-	
+
 yy5:
 	lodsb
 	or [es:di],al
@@ -349,11 +350,11 @@ proc shotTakeSqr
 	mov di, [newShotPos]
 	mov si, offset shotScrKeep
 	mov cx, [pShotHeight]
-	
+
 takeLine5:
 	push cx
 	mov cx, [pShotWidth]
-	
+
 takeCol5:
 	mov al, [es:di]
 	mov [si], al
@@ -377,11 +378,11 @@ proc shotRetSqr
 	mov di,[oldShotPos]
 	mov si, offset shotScrKeep
 	mov cx, [pShotHeight]
-	
+
 retLine5:
 	push cx
 	mov cx, [pShotWidth]
-	
+
 retCol5:
 	mov al, [si]
 	mov [es:di], al
@@ -444,7 +445,7 @@ proc clockDelay
 	mov es, ax
 	mov cx, 1
 	mov bx, 0
-FirstTick: 
+FirstTick:
 	cmp ax, [Clock]
 	je FirstTick
 	mov cx, [cDelayAmount]
@@ -509,3 +510,17 @@ proc normalLvlStart
 	call clockDelay
 	ret
 endp normalLvlStart
+
+proc printScore
+	mov bh, 0
+	mov dh, 22
+	mov dl, 8
+	mov ah, 2h
+	int 10h
+	mov	dx, offset scoretxt
+	mov ah, 9
+	int 21h
+	xor ax, ax
+	mov al, [score]
+	call printNumber
+endp printScore

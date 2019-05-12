@@ -7,10 +7,10 @@ DATASEG
 ; ------------------------------
 
 	include "vars.asm" ; All variables for project
-	
-	
+
+
 	InputTime		dw 9999
-	
+
 ; ------------------------------
 
 CODESEG
@@ -21,7 +21,7 @@ CODESEG
 start:
 	mov ax, @data
 	mov ds, ax
-	
+
 ; ------------------------------
 
 	; Entering graphic mode:
@@ -34,7 +34,7 @@ mainScr:
 	call bmp
 	mov [playerHP], 3
 	mov [enemyHP], 3
-	
+
 reciveInput:
 	; Get a key (1 symbol):
 	mov ah, 7h
@@ -58,7 +58,7 @@ reciveInput:
 	cmp al, 1Bh
 	je goEndProgram2
 	jmp reciveInput
-	
+
 selectLvlScr:
 	mov [fileName], offset selectLvlFile
 	call bmp
@@ -79,7 +79,7 @@ reciveSelectInput:
 	cmp al, 1Bh
 	je mainScr
 	jmp reciveSelectInput
-	
+
 setDifficultyChoose1:
 	mov [selectedLvl], 1
 	mov [moveEnemyTankSpeed], 250
@@ -89,10 +89,10 @@ setDifficultyChoose2:
 	mov [selectedLvl], 2
 	mov [moveEnemyTankSpeed], 100
 	jmp level1Scr
-	
+
 goEndProgram2:
 	jmp endProgram
-	
+
 helpScr:
 	mov [fileName], offset helpScrFile
 	call bmp
@@ -138,19 +138,19 @@ getPauseInput:
 	cmp al, 63h
 	je gotoSelectLvl
 	jmp getPauseInput
-	
+
 gotoSelectLvl:
 	jmp selectLvlScr
-	
+
 resumeToLvl:
 	cmp [selectedLvl], 1
 	je printMap1
 	cmp [selectedLvl], 2
 	je printMap2
-	
+
 gotoMainScr:
 	jmp mainScr
-	
+
 tryAgainScr:
 	mov [fileName], offset tryAgainFile
 	call bmp
@@ -174,24 +174,24 @@ tryAgainInput:
 	cmp al, 65h
 	je gotoMainScr
 	jmp tryAgainInput
-	
+
 gotoSelectLvlScr:
 	jmp selectLvlScr
-	
+
 restartGame:
 	mov [playerHP], 3
 	mov [enemyHP], 3
-	
+
 level1Scr:
-	
+
 	cmp [selectedLvl], 1
 	je startMap1
-	
+
 startMap2:
 	call hardLvlStart
 	mov [playerHP], 1
 	mov [enemyHP], 5
-	
+
 printMap2:
 	mov [fileName], offset hardLvlFile
 	call bmp
@@ -205,7 +205,7 @@ startMap1:
 printMap1:
 	mov [fileName], offset gameBack
 	call bmp
-	
+
 startGame:
 	; initializing:
 	mov ax, 40h
@@ -222,7 +222,7 @@ startGame:
 	; Printing the sprite:
 	call anding
 	call oring
-	
+
 	; Printing the character && getting the first position:
 	mov [newEnemyPos], 320*35+150 ; Middle Screen
 	call eTakeSqr ; Take the first square before printing the character
@@ -232,7 +232,6 @@ startGame:
 	; Printing the sprite:
 	call eAnding
 	call eOring
-	
 	; Print the players Hit-points
 showPlayersHP:
 	mov bh, 0
@@ -246,7 +245,7 @@ showPlayersHP:
 	xor ax, ax
 	mov al, [playerHP]
 	call printNumber
-	
+
 	; Print the robots Hit-points
 showEnemysHP:
 	mov bh, 0
@@ -260,12 +259,14 @@ showEnemysHP:
 	xor ax, ax
 	mov al, [enemyHP]
 	call printNumber
-	
+
 	mov [shotLength], 10
+	mov [score], 0
 
 level1:
-; The main code loop to run the gameplay
+
 	dec [InputTime]
+
 checkKey:
 	; Check if there is any key
 	mov ah,1
@@ -281,7 +282,7 @@ goRandom:
 	cmp [moveEnemyTank], ax
 	je controlls
 	jmp level1
-	
+
 contGetKey:
 	; Get a key (1 symbol):
 	mov ah, 0
@@ -299,10 +300,10 @@ contGetKey:
 	cmp ah, 01h
 	je gotoPause
 	jmp level1
-	
+
 gotoPause:
 	jmp pauseScr
-	
+
 goEndProgram:
 	; Shortcut to jump to label endProgram
 	jmp endProgram
@@ -330,7 +331,7 @@ ifSpaceShoot:
 	call moveShot
 	call shotRetSqr
 	jmp level1
-	
+
 controlls:
 	; if got 0 move enemy to left
 	cmp [eTurnValue], 0
@@ -341,7 +342,7 @@ controlls:
 	; if got 2 enemy Shoot!
 	cmp [eTurnValue], 2
 	je enemyShoot
-	
+
 enemyLeft:
 	; Moving the enemy tank to left
 	sub [newEnemyPos], 25
@@ -365,10 +366,12 @@ enemyShoot:
 	call eMoveShot
 	call eShotRetSqr
 	jmp level1
-	
+
 wonScr:
 	mov [fileName], offset wonFile
 	call bmp
+	inc [score]
+	call printScore
 	; Block spamming to skip the screen
 	mov [cDelayAmount], 20
 	call clockDelay
@@ -379,7 +382,7 @@ wonScr:
 	mov ax, 13
 	int 16h
 	jmp tryAgainScr
-	
+
 youLostScr:
 	mov [fileName], offset lostFile
 	call bmp
@@ -393,11 +396,11 @@ youLostScr:
 	mov ax, 13
 	int 16h
 	jmp tryAgainScr
-	
+
 gotoMain:
 	; Shortcut to level1
 	jmp level1
-	
+
 endProgram:
 	; Entering text mode
 	mov ax, 3h
@@ -406,12 +409,10 @@ endProgram:
 	mov dx, offset goodByeMsg
 	mov ah, 9h
 	int 21h
-	
+
 ; ------------------------------
-	
+
 exit:
 	mov ax, 4c00h
 	int 21h
 END start
-
-
