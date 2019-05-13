@@ -258,6 +258,7 @@ hitEnemy:
 	call stopSound
 	dec [enemyHP]
 	call shotRetSqr
+	mov [hitEnemyShot],1
 refreshEnemyHPtxt:
 	mov bh, 0
 	mov dh, 1
@@ -282,11 +283,17 @@ enemyDead:
 	jmp wonScr
 
 returnFromShot:
+	cmp [selectedLvl],3
+	jne fullyReturn
+	cmp [hitEnemyShot],1
+	je fullyReturn
+impModeHP:
+	mov [enemyHP],7
+	call printPlayersHP
+fullyReturn:
+	mov [hitEnemyShot],0
 	inc [score]
 	mov [shotLength], 10
-	mov ah,0Ch
-	mov al,0
-	int 21h
 	doPop dx,cx,bx,ax
 	ret
 endp moveShot
@@ -511,6 +518,37 @@ proc normalLvlStart
 	ret
 endp normalLvlStart
 
+proc impModeStart
+	mov [fileName], offset getRdy3File
+	call bmp
+	mov [note], 7000h
+	call playSound
+	mov [cDelayAmount], 3
+	call clockDelay
+	call stopSound
+	call clockDelay
+	mov [note], 4000h
+	call playSound
+	mov [cDelayAmount], 3
+	call clockDelay
+	call stopSound
+	call clockDelay
+	mov [fileName], offset rdyGo3File
+	call bmp
+	mov [note], 2500h
+	call playSound
+	mov [cDelayAmount], 3
+	call clockDelay
+	call stopSound
+	call clockDelay
+	ret
+endp impModeStart
+
+; proc startLvlAnimation
+	; cmp [selectedLvl], 3
+	; je 
+; endp startLvlAnimation
+
 proc printScore
 	mov bh, 0
 	mov dh, 22
@@ -523,4 +561,22 @@ proc printScore
 	xor ax, ax
 	mov al, [score]
 	call printNumber
+	ret
 endp printScore
+
+proc printPlayersHP
+	doPush ax,dx
+	mov bh, 0
+	mov dh, 1
+	mov dl, 0
+	mov ah, 2h
+	int 10h
+	mov	dx, offset enemyHPtxt
+	mov ah, 9
+	int 21h
+	xor ax, ax
+	mov al, [enemyHP]
+	call printNumber
+	doPop dx,ax
+	ret
+endp printPlayersHP

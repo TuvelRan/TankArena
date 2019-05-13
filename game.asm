@@ -32,8 +32,6 @@ start:
 mainScr:
 	mov [fileName], offset mainScrFile
 	call bmp
-	mov [playerHP], 3
-	mov [enemyHP], 3
 
 reciveInput:
 	; Get a key (1 symbol):
@@ -78,6 +76,12 @@ reciveSelectInput:
 	je setDifficultyChoose2
 	cmp al, 1Bh
 	je mainScr
+	; TOP SECRET IMPOSSIBLE MODE:
+	; check if i key
+	cmp al, 49h
+	je setDifficultyChoose3
+	cmp al, 69h
+	je setDifficultyChoose3
 	jmp reciveSelectInput
 
 setDifficultyChoose1:
@@ -87,6 +91,11 @@ setDifficultyChoose1:
 
 setDifficultyChoose2:
 	mov [selectedLvl], 2
+	mov [moveEnemyTankSpeed], 100
+	jmp level1Scr
+	
+setDifficultyChoose3:
+	mov [selectedLvl], 3
 	mov [moveEnemyTankSpeed], 100
 	jmp level1Scr
 
@@ -142,11 +151,16 @@ getPauseInput:
 gotoSelectLvl:
 	jmp selectLvlScr
 
+gotoPrintMap1:
+	jmp printMap1
+	
 resumeToLvl:
 	cmp [selectedLvl], 1
-	je printMap1
+	je gotoPrintMap1
 	cmp [selectedLvl], 2
 	je printMap2
+	cmp [selectedLvl], 3
+	je printMap3
 
 gotoMainScr:
 	jmp mainScr
@@ -183,9 +197,20 @@ restartGame:
 	mov [enemyHP], 3
 
 level1Scr:
-
 	cmp [selectedLvl], 1
 	je startMap1
+	cmp [selectedLvl], 2
+	je startMap2
+	
+startMap3:
+	call impModeStart
+	mov [playerHP], 1
+	mov [enemyHP], 7
+	
+printMap3:
+	mov [fileName], offset impModeFile
+	call bmp
+	jmp startGame
 
 startMap2:
 	call hardLvlStart
@@ -214,20 +239,20 @@ startGame:
 	mov bx, 0
 
 	; Printing the character && getting the first pos:
-	mov [newPos], 320*125+150 ; Middle Screen
+	mov [newPos], 320*125+230 ; Middle Screen
 	call takeSqr ; Take the first square before printing the character
-	mov [oldPos], 320*125+150 ; Middle Screen
-	mov [x], 150 ; Using X + Y to control the character
+	mov [oldPos], 320*125+230 ; Middle Screen
+	mov [x], 230 ; Using X + Y to control the character
 	mov [y], 125 ; Using X + Y to control the character
 	; Printing the sprite:
 	call anding
 	call oring
 
 	; Printing the character && getting the first position:
-	mov [newEnemyPos], 320*35+150 ; Middle Screen
+	mov [newEnemyPos], 320*35+70 ; Middle Screen
 	call eTakeSqr ; Take the first square before printing the character
-	mov [oldEnemyPos], 320*35+150 ; Middle Screen
-	mov [enemyX], 150 ; Using enemyX + enemyY to control the character
+	mov [oldEnemyPos], 320*35+70 ; Middle Screen
+	mov [enemyX], 70 ; Using enemyX + enemyY to control the character
 	mov [enemyY], 35 ; Using enemyX + enemyY to control the character
 	; Printing the sprite:
 	call eAnding
@@ -266,7 +291,6 @@ showEnemysHP:
 level1:
 
 	dec [InputTime]
-
 checkKey:
 	; Check if there is any key
 	mov ah,1
@@ -326,7 +350,6 @@ arrowLeft:
 	jmp level1
 
 ifSpaceShoot:
-	;call enemyAvoidShot
 	call shotTakeSqr
 	call moveShot
 	call shotRetSqr

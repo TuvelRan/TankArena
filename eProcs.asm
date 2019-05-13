@@ -144,13 +144,17 @@ resetMovingValue:
 	
 RandLoop:
 	mov ax, 40h
-	mov es, ax
+	mov es, ax	
+randAgain:
+	mov bx,[randCodeByte]
+	inc [randCodeByte]
 	; generate random number, cx number of times
 	mov ax, [Clock] 		; read timer counter
 	mov ah, [byte cs:bx] 	; read one byte from memory
 	xor al, ah 			; xor memory and counter
 	and al, 3	; leave result between 0-2
-	dec al
+	cmp al,3
+	je randAgain
 	mov [eTurnValue], al
 	inc bx
 return_fromRandomMove:

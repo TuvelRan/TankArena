@@ -70,5 +70,10 @@
 		getRdy2File		db 'Screens\getRdy2.bmp',0
 		rdyGo2File		db 'Screens\rdyGo2.bmp',0
 		tryAgainFile	db 'Screens\tryAgain.bmp',0
-		score					db 0 ; players score in the current game
-		scoretxt			db 'You Won With Shooting: ','$' ; Used to print the score.
+		score			db 0 ; players score in the current game
+		scoretxt		db 'You Won With Shooting: ','$' ; Used to print the score.
+		impModeFile		db 'Screens\impMode.bmp',0
+		getRdy3File		db 'Screens\getRdy3.bmp',0
+		rdyGo3File		db 'Screens\rdyGo3.bmp',0
+		hitEnemyShot	db 0
+		randCodeByte	dw 1

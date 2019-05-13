@@ -89,9 +89,7 @@ PrintBMPLoop:
 	shl cx,6 
 	shl di,8 
 	add di,cx
-	add di,0
-	add di,0*320
-
+	sub di, 320
 	; Read one line
 	mov ah,3fh
 	mov cx,320
@@ -115,16 +113,6 @@ proc CloseFile
 	int 21h
 	ret
 endp CloseFile
-
-proc printPic
-       call OpenFile
-       call ReadHeader
-       call ReadPalette
-       call CopyPal
-       call CopyBitmap
-       call CloseFile
-ret
-endp printPic
 
 proc bmp
 	call OpenFile
