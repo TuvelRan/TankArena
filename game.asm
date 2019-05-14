@@ -93,7 +93,7 @@ setDifficultyChoose2:
 	mov [selectedLvl], 2
 	mov [moveEnemyTankSpeed], 100
 	jmp level1Scr
-	
+
 setDifficultyChoose3:
 	mov [selectedLvl], 3
 	mov [moveEnemyTankSpeed], 100
@@ -153,7 +153,7 @@ gotoSelectLvl:
 
 gotoPrintMap1:
 	jmp printMap1
-	
+
 resumeToLvl:
 	cmp [selectedLvl], 1
 	je gotoPrintMap1
@@ -201,12 +201,12 @@ level1Scr:
 	je startMap1
 	cmp [selectedLvl], 2
 	je startMap2
-	
+
 startMap3:
-	call impModeStart
+	call startLvlAnimation
 	mov [playerHP], 1
 	mov [enemyHP], 7
-	
+
 printMap3:
 	mov [fileName], offset impModeFile
 	call bmp
@@ -240,23 +240,53 @@ startGame:
 
 	; Printing the character && getting the first pos:
 	mov [newPos], 320*125+230 ; Middle Screen
+	mov di,[newPos]
+	mov si, offset scrKeep
+	mov cx,[tankHeight]
+	mov bx,[tankWidth]
+	mov [width_], bx
 	call takeSqr ; Take the first square before printing the character
 	mov [oldPos], 320*125+230 ; Middle Screen
 	mov [x], 230 ; Using X + Y to control the character
 	mov [y], 125 ; Using X + Y to control the character
 	; Printing the sprite:
+	mov di,[newPos]
+	mov si, offset pTankMask
+	mov cx,[tankHeight]
+	mov bx,[tankWidth]
+	mov [width_], bx
 	call anding
+	mov di,[newPos]
+	mov si, offset pTank
+	mov cx,[tankHeight]
+	mov bx,[tankWidth]
+	mov [width_],bx
 	call oring
 
 	; Printing the character && getting the first position:
 	mov [newEnemyPos], 320*35+70 ; Middle Screen
-	call eTakeSqr ; Take the first square before printing the character
+	mov di,[newEnemyPos]
+	mov si, offset eScrKeep
+	mov cx,[eTankHeight]
+	mov bx,[eTankWidth]
+	mov [width_], bx
+	call takeSqr ; Take the first square before printing the character
 	mov [oldEnemyPos], 320*35+70 ; Middle Screen
 	mov [enemyX], 70 ; Using enemyX + enemyY to control the character
 	mov [enemyY], 35 ; Using enemyX + enemyY to control the character
 	; Printing the sprite:
-	call eAnding
-	call eOring
+	mov di,[newEnemyPos]
+	mov si, offset eTankMask
+	mov cx,[eTankHeight]
+	mov bx,[eTankWidth]
+	mov [width_], bx
+	call anding
+	mov di,[newEnemyPos]
+	mov si, offset eTank
+	mov cx,[eTankHeight]
+	mov bx,[eTankWidth]
+	mov [width_], bx
+	call oring
 	; Print the players Hit-points
 showPlayersHP:
 	mov bh, 0
@@ -304,7 +334,7 @@ goRandom:
 	call randomMove
 	mov ax, [moveEnemyTankSpeed]
 	cmp [moveEnemyTank], ax
-	je controlls
+	je gotoControls
 	jmp level1
 
 contGetKey:
@@ -325,6 +355,9 @@ contGetKey:
 	je gotoPause
 	jmp level1
 
+gotoControls:
+	jmp controlls
+
 gotoPause:
 	jmp pauseScr
 
@@ -338,6 +371,9 @@ arrowRight:
 	jae	level1
 	add [x], 40
 	call movePlayer
+	mov ah, 0Ch
+	xor al,al
+	int 21h
 	jmp level1
 
 arrowLeft:
@@ -347,12 +383,28 @@ arrowLeft:
 	jbe	level1
 	sub [x], 40
 	call movePlayer
+	mov ah, 0Ch
+	xor al,al
+	int 21h
 	jmp level1
 
 ifSpaceShoot:
-	call shotTakeSqr
+	mov di,[newShotPos]
+	mov si, offset shotScrKeep
+	mov cx,[pShotHeight]
+	mov bx,[pShotWidth]
+	mov [width_], bx
+	call takeSqr
 	call moveShot
-	call shotRetSqr
+	mov di,[oldShotPos]
+	mov si, offset shotScrKeep
+	mov cx,[pShotHeight]
+	mov bx,[pShotWidth]
+	mov [width_], bx
+	call retSqr
+	mov ah, 0Ch
+	xor al,al
+	int 21h
 	jmp level1
 
 controlls:
@@ -385,9 +437,23 @@ enemyRight:
 
 enemyShoot:
 	; Making the enemy tank to shoot
-	call eShotTakeSqr
+	mov di,[eShotNewPos]
+	mov si, offset eShotScrKeep
+	mov cx,[eShotHeight]
+	mov bx,[eShotWidth]
+	mov [width_], bx
+	call takeSqr
 	call eMoveShot
-	call eShotRetSqr
+	mov di,[eShotOldPos]
+	mov si, offset eShotScrKeep
+	mov cx,[eShotHeight]
+	mov bx,[eShotWidth]
+	mov [width_], bx
+	call retSqr
+	jmp level1
+
+gotoMain:
+	; Shortcut to level1
 	jmp level1
 
 wonScr:
@@ -396,7 +462,7 @@ wonScr:
 	inc [score]
 	call printScore
 	; Block spamming to skip the screen
-	mov [cDelayAmount], 20
+	mov [cDelayAmount], 15
 	call clockDelay
 	mov ah,0Ch
 	mov al,0
@@ -410,7 +476,7 @@ youLostScr:
 	mov [fileName], offset lostFile
 	call bmp
 	; Block spamming to skip the screen
-	mov [cDelayAmount], 20
+	mov [cDelayAmount], 15
 	call clockDelay
 	mov ah,0Ch
 	mov al,0
@@ -419,10 +485,6 @@ youLostScr:
 	mov ax, 13
 	int 16h
 	jmp tryAgainScr
-
-gotoMain:
-	; Shortcut to level1
-	jmp level1
 
 endProgram:
 	; Entering text mode

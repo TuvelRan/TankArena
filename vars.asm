@@ -77,3 +77,7 @@
 		rdyGo3File		db 'Screens\rdyGo3.bmp',0
 		hitEnemyShot	db 0
 		randCodeByte	dw 1
+		width_			dw ?
+		getRdyFile		db ?
+		rdyGoFile		db ?
+		whatFileToPlay	db 3

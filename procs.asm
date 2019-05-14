@@ -38,13 +38,10 @@ proc anding
 	doPush ax, es, di, si, cx
 	mov ax, 0A000h
 	mov es,ax
-	mov di,[newPos]
-	mov si, offset pTankMask
-	mov cx,[tankHeight]
 
 and1:
 	push cx
-	mov cx,[tankWidth]
+	mov cx,[width_]
 
 xx1:
 	lodsb
@@ -52,7 +49,7 @@ xx1:
 	inc di
 	loop xx1
 	add di, 320
-	sub di, [tankWidth]
+	sub di, [width_]
 	pop cx
 	loop and1
 	doPop cx, si, di, es, ax
@@ -65,13 +62,10 @@ proc oring
 	doPush ax, es, di, si, cx
 	mov ax, 0A000h
 	mov es,ax
-	mov di,[newPos]
-	mov si, offset pTank
-	mov cx,[tankHeight]
 
 or1:
 	push cx
-	mov cx,[tankWidth]
+	mov cx,[width_]
 
 yy1:
 	lodsb
@@ -79,7 +73,7 @@ yy1:
 	inc di
 	loop yy1
 	add di, 320
-	sub di, [tankWidth]
+	sub di, [width_]
 	pop cx
 	loop or1
 	doPop cx, si, di, es, ax
@@ -92,13 +86,10 @@ proc takeSqr
 	doPush es, ax, si, di, cx
 	mov ax, 0A000h
 	mov es, ax
-	mov di, [newPos]
-	mov si, offset scrKeep
-	mov cx, [tankHeight]
 
 takeLine1:
 	push cx
-	mov cx, [tankWidth]
+	mov cx, [width_]
 
 takeCol1:
 	mov al, [es:di]
@@ -107,7 +98,7 @@ takeCol1:
 	inc di
 	loop takeCol1
 	add di, 320
-	sub di, [tankWidth]
+	sub di, [width_]
 	pop cx
 	loop takeLine1
 	doPop cx, di, si, ax, es
@@ -120,14 +111,9 @@ proc retSqr
 	doPush es, ax, si, di, cx
 	mov ax, 0A000h
 	mov es,ax
-	mov di,[oldPos]
-	mov si, offset scrKeep
-	mov cx, [tankHeight]
-
 retLine:
 	push cx
-	mov cx, [tankWidth]
-
+	mov cx, [width_]
 retCol:
 	mov al, [si]
 	mov [es:di], al
@@ -135,35 +121,12 @@ retCol:
 	inc di
 	loop retCol
 	add di, 320
-	sub di, [tankWidth]
+	sub di, [width_]
 	pop cx
 	loop retLine
 	doPop cx, di, si, ax, es
 	ret
 endp retSqr
-
-proc moveWithSqr
-	; input: getting positions y + x
-	; output: moving the character and restoring the background and taking the new square the character is going to
-	doPush bx, cx
-	mov bx, [x] ; The current position of X.
-	mov cx, [y] ; The times we will need to loop for rows.
-
-createR1: ; Creating the row. Adding 320 to go to the next line
-	add bx, 320
-	loop createR1
-
-returnSqr1:
-	mov [newPos], bx ; The new position we got into newPos variable
-	call retSqr ; Return last sqr to the old position
-	call takeSqr ; Taking new sqr from the newPos
-	call anding
-	call oring
-	mov bx, [newPos]
-	mov [oldPos], bx
-	doPop cx, bx
-	ret
-endp moveWithSqr
 
 proc movePlayer
 	; input: getting positions y + x
@@ -188,9 +151,29 @@ Tick1:
 	doPush bx, cx
 returnSqr2:
 	mov [newPos], bx ; The new position we got into newPos variable
+	mov di,[oldPos]
+	mov si, offset ScrKeep
+	mov cx,[tankHeight]
+	mov bx,[tankWidth]
+	mov [width_],bx
 	call retSqr ; Return last sqr to the old position
+	mov di,[newPos]
+	mov si, offset scrKeep
+	mov cx,[tankHeight]
+	mov bx,[tankWidth]
+	mov [width_], bx
 	call takeSqr ; Taking new sqr from the newPos
+	mov di,[newPos]
+	mov si, offset pTankMask
+	mov cx,[tankHeight]
+	mov bx,[tankWidth]
+	mov [width_], bx
 	call anding
+	mov di,[newPos]
+	mov si, offset pTank
+	mov cx,[tankHeight]
+	mov bx,[tankWidth]
+	mov [width_], bx
 	call oring
 	mov bx, [newPos]
 	mov [oldPos], bx
@@ -228,10 +211,30 @@ createR12: ; Creating the row. Adding 320 to go to the next line
 
 returnSqr12:
 	mov [newShotPos], bx ; The new position we got into newPos variable
-	call shotRetSqr ; Return last sqr to the old position
-	call shotTakeSqr ; Taking new sqr from the newPos
-	call shotAnding
-	call shotOring
+	mov di,[oldShotPos]
+	mov si, offset shotScrKeep
+	mov cx,[pShotHeight]
+	mov bx,[pShotWidth]
+	mov [width_], bx
+	call retSqr ; Return last sqr to the old position
+	mov di,[newShotPos]
+	mov si, offset shotScrKeep
+	mov cx,[pShotHeight]
+	mov bx,[pShotWidth]
+	mov [width_], bx
+	call takeSqr ; Taking new sqr from the newPos
+	mov di,[newShotPos]
+	mov si, offset pShotMask
+	mov cx,[pShotHeight]
+	mov bx,[pShotWidth]
+	mov [width_], bx
+	call anding
+	mov di,[newShotPos]
+	mov si, offset pShot
+	mov cx,[pShotHeight]
+	mov bx,[pShotWidth]
+	mov [width_], bx
+	call oring
 	mov bx, [newShotPos]
 	mov [oldShotPos], bx
 	sub [shotY], 13
@@ -257,7 +260,12 @@ hitEnemy:
 	call delay
 	call stopSound
 	dec [enemyHP]
-	call shotRetSqr
+	mov di,[oldShotPos]
+	mov si, offset shotScrKeep
+	mov cx,[pShotHeight]
+	mov bx,[pShotWidth]
+	mov [width_], bx
+	call retSqr
 	mov [hitEnemyShot],1
 refreshEnemyHPtxt:
 	mov bh, 0
@@ -297,112 +305,6 @@ fullyReturn:
 	doPop dx,cx,bx,ax
 	ret
 endp moveShot
-
-proc shotAnding
-	doPush ax, es, di, si, cx
-	mov ax, 0A000h
-	mov es,ax
-	mov di,[newShotPos]
-	mov si, offset pShotMask
-	mov cx,[pShotHeight]
-
-and5:
-	push cx
-	mov cx,[pShotWidth]
-
-xx5:
-	lodsb
-	and [es:di],al
-	inc di
-	loop xx5
-	add di, 320
-	sub di, [pShotWidth]
-	pop cx
-	loop and5
-	doPop cx, si, di, es, ax
-	ret
-endp shotAnding
-
-proc shotOring
-	doPush ax, es, di, si, cx
-	mov ax, 0A000h
-	mov es,ax
-	mov di,[newShotPos]
-	mov si, offset pShot
-	mov cx,[pShotHeight]
-
-or5:
-	push cx
-	mov cx,[pShotWidth]
-
-yy5:
-	lodsb
-	or [es:di],al
-	inc di
-	loop yy5
-	add di, 320
-	sub di, [pShotWidth]
-	pop cx
-	loop or5
-	doPop cx, si, di, es, ax
-	ret
-endp shotOring
-
-proc shotTakeSqr
-	; input: taking the current position into newShotPos variable
-	; output: taking the sqr size into scrKeep variable
-	doPush es, ax, si, di, cx
-	mov ax, 0A000h
-	mov es, ax
-	mov di, [newShotPos]
-	mov si, offset shotScrKeep
-	mov cx, [pShotHeight]
-
-takeLine5:
-	push cx
-	mov cx, [pShotWidth]
-
-takeCol5:
-	mov al, [es:di]
-	mov [si], al
-	inc si
-	inc di
-	loop takeCol5
-	add di, 320
-	sub di, [pShotWidth]
-	pop cx
-	loop takeLine5
-	doPop cx, di, si, ax, es
-	ret
-endp shotTakeSqr
-
-proc shotRetSqr
-	; input: the last position into oldShotPos variable
-	; output: restoring the last sqr in scrKeep variable
-	doPush es, ax, si, di, cx
-	mov ax, 0A000h
-	mov es,ax
-	mov di,[oldShotPos]
-	mov si, offset shotScrKeep
-	mov cx, [pShotHeight]
-
-retLine5:
-	push cx
-	mov cx, [pShotWidth]
-
-retCol5:
-	mov al, [si]
-	mov [es:di], al
-	inc si
-	inc di
-	loop retCol5
-	add di, 320
-	sub di, [pShotWidth]
-	pop cx
-	loop retLine5
-	doPop cx, di, si, ax, es
-	ret
-endp shotRetSqr
 
 proc delay
 	push cx
@@ -544,10 +446,41 @@ proc impModeStart
 	ret
 endp impModeStart
 
-; proc startLvlAnimation
-	; cmp [selectedLvl], 3
-	; je 
-; endp startLvlAnimation
+proc startLvlAnimation
+	mov [fileName], offset getRdy3File
+	call bmp
+	mov [note], 7000h
+	call playSound
+	mov [cDelayAmount], 3
+	call clockDelay
+	call stopSound
+	call clockDelay
+	mov [note], 4000h
+	call playSound
+	mov [cDelayAmount], 3
+	call clockDelay
+	call stopSound
+	call clockDelay
+	cmp [selectedLvl], 3
+	jne setForLvl2
+	mov [fileName], offset rdyGo3File
+	jmp runGo
+setForLvl2:
+	mov [fileName], offset rdyGo2File
+	jmp runGo
+setForLvl1:
+	mov [filename], offset rdyGo1File
+
+runGo:
+	call bmp
+	mov [note], 2500h
+	call playSound
+	mov [cDelayAmount], 3
+	call clockDelay
+	call stopSound
+	call clockDelay
+	ret
+endp startLvlAnimation
 
 proc printScore
 	mov bh, 0
