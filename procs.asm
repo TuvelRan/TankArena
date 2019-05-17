@@ -182,7 +182,10 @@ returnSqr2:
 endp movePlayer
 
 proc moveShot
+	; enter: calling the proc whenever the user press space to shoot
+	; exit: the shot itself moving toward the robot and checking for hit, misshit or death
 	doPush ax,bx,cx,dx
+	; Setting all of the x and y parameters from the tank to use for the shot
 	mov dx, [x]
 	mov [shotX], dx
 	add [shotX], 9
@@ -201,14 +204,11 @@ goMoving:
 	; output: moving the character and restoring the background and taking the new square the character is going to
 	mov bx, [shotX] ; The current position of X.
 	mov cx, [shotY] ; The times we will need to loop for rows.
-
 createR12: ; Creating the row. Adding 320 to go to the next line
 	add bx, 320
 	loop createR12
-
 	mov [delayAmount], 40
 	call delay
-
 returnSqr12:
 	mov [newShotPos], bx ; The new position we got into newPos variable
 	mov di,[oldShotPos]
@@ -239,35 +239,32 @@ returnSqr12:
 	mov [oldShotPos], bx
 	sub [shotY], 13
 	dec [shotLength]
-
 ; Read pixel value into al
 	mov bh,0h
 	mov cx,[shotX]
 	mov dx,[shotY]
 	mov ah,0Dh
 	int 10h
-
-checkIfHit:
+checkIfHit: ; check if the shotX and shotY equals to the color of the robot
 	cmp al, 0077
-	je hitEnemy
-	cmp [shotLength], 0
-	je returnFromShot
-	jmp goMoving
-
+	je hitEnemy ; if the color is equals to the robot color it's a hit go to hitEnemy label
+	cmp [shotLength], 0 ; else check if the shot has ended
+	je returnFromShot ; if it does return from shot and reset the shot parameters
+	jmp goMoving ; else the shot didn't ended go to goMoving label to continue the shot
 hitEnemy:
 	mov [note], 2000h
-	call playSound
+	call playSound ; play the sound of hit
 	call delay
 	call stopSound
-	dec [enemyHP]
+	dec [enemyHP] ; decrease the robot's health
 	mov di,[oldShotPos]
 	mov si, offset shotScrKeep
 	mov cx,[pShotHeight]
 	mov bx,[pShotWidth]
 	mov [width_], bx
-	call retSqr
-	mov [hitEnemyShot],1
-refreshEnemyHPtxt:
+	call retSqr ; Remove the shot from the screen as the shot hit the player
+	mov [hitEnemyShot],1 ; used only for the impossible MODE
+refreshEnemyHPtxt: ; Printing the robot's HP counter to update his status
 	mov bh, 0
 	mov dh, 1
 	mov dl, 0
@@ -279,34 +276,31 @@ refreshEnemyHPtxt:
 	xor ax, ax
 	mov al, [enemyHP]
 	call printNumber
-	cmp [enemyHP], 0
-	je enemyDead
-	jmp returnFromShot
-
+	cmp [enemyHP], 0 ; check if the robot's HP equals to 0
+	je enemyDead ; if it does goto enemyDead label
+	jmp returnFromShot ; else return from shot and reset the shot parameters
 enemyDead:
-	mov ah,0Ch
-	mov al,0
-	int 21h
 	doPop dx,cx,bx,ax
-	jmp wonScr
-
+	jmp wonScr ; go to win Screen
 returnFromShot:
-	cmp [selectedLvl],3
-	jne fullyReturn
-	cmp [hitEnemyShot],1
-	je fullyReturn
+	cmp [selectedLvl],3 ; check if the selected level is 3 = impossible
+	jne fullyReturn ; if not we can skip the next part and goto fullyReturn
+	cmp [hitEnemyShot],1 ; check if hit enemy
+	je fullyReturn ; if hit enemy goto fullyReturn
 impModeHP:
-	mov [enemyHP],7
-	call printPlayersHP
+	mov [enemyHP],7 ; else it means the player have missed the reset the HP to 7
+	call printPlayersHP ; refresh EnemyHP to update the status
 fullyReturn:
-	mov [hitEnemyShot],0
-	inc [score]
-	mov [shotLength], 10
+	mov [hitEnemyShot],0 ; make hit status equals to 0
+	inc [score] ; inc the score (shot counter)
+	mov [shotLength], 10 ; reset the shot length value
 	doPop dx,cx,bx,ax
 	ret
 endp moveShot
 
 proc delay
+	; enter: called when want to delay using delayAmount
+	; exit: when the loop is over
 	push cx
 setDelayParameter:
 	mov cx, 60000
@@ -320,6 +314,8 @@ delayLooper:
 endp delay
 
 proc playSound
+	; enter: called to play sound from the system using the value in [note]
+	; exit: sound is on with the frequency in [note]
 	push ax
 	; open speaker
 	in al,61h
@@ -338,6 +334,8 @@ proc playSound
 endp playSound
 
 proc stopSound
+	; enter: called to stop the sound frequency
+	; exit: sound is off
 	push ax
 	; close the speaker
 	in al,61h
@@ -348,6 +346,8 @@ proc stopSound
 endp stopSound
 
 proc clockDelay
+	; enter: called to do delay using the clock and the amount of delay is [cDelayAmount]
+	; exit: after delay loop ended
 	doPush ax,cx
 	; initializing:
 	mov ax, 40h
@@ -369,6 +369,8 @@ Tick:
 endp clockDelay
 
 proc hardLvlStart
+	; enter: starting the level animation with: get ready,go!
+	; exit: after animation has ended going to start the game
 	mov [fileName], offset getRdy2File
 	call bmp
 	mov [note], 7000h
@@ -395,6 +397,8 @@ proc hardLvlStart
 endp hardLvlStart
 
 proc normalLvlStart
+; enter: starting the level animation with: get ready,go!
+; exit: after animation has ended going to start the game
 	mov [fileName], offset getRdy1File
 	call bmp
 	mov [note], 7000h
@@ -421,6 +425,8 @@ proc normalLvlStart
 endp normalLvlStart
 
 proc impModeStart
+; enter: starting the level animation with: get ready,go!
+; exit: after animation has ended going to start the game
 	mov [fileName], offset getRdy3File
 	call bmp
 	mov [note], 7000h
@@ -446,43 +452,9 @@ proc impModeStart
 	ret
 endp impModeStart
 
-proc startLvlAnimation
-	mov [fileName], offset getRdy3File
-	call bmp
-	mov [note], 7000h
-	call playSound
-	mov [cDelayAmount], 3
-	call clockDelay
-	call stopSound
-	call clockDelay
-	mov [note], 4000h
-	call playSound
-	mov [cDelayAmount], 3
-	call clockDelay
-	call stopSound
-	call clockDelay
-	cmp [selectedLvl], 3
-	jne setForLvl2
-	mov [fileName], offset rdyGo3File
-	jmp runGo
-setForLvl2:
-	mov [fileName], offset rdyGo2File
-	jmp runGo
-setForLvl1:
-	mov [filename], offset rdyGo1File
-
-runGo:
-	call bmp
-	mov [note], 2500h
-	call playSound
-	mov [cDelayAmount], 3
-	call clockDelay
-	call stopSound
-	call clockDelay
-	ret
-endp startLvlAnimation
-
 proc printScore
+	; enter: printing the score on the screen
+	; exit: score printed
 	mov bh, 0
 	mov dh, 22
 	mov dl, 8
@@ -498,6 +470,8 @@ proc printScore
 endp printScore
 
 proc printPlayersHP
+	; enter: called to print the HP of the enemy used in moveShot
+	; exit: hp printed and refreshed
 	doPush ax,dx
 	mov bh, 0
 	mov dh, 1

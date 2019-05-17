@@ -42,17 +42,19 @@ returnSqr:
 endp eMoveWithSqr
 
 proc randomMove
+	; enter: Calling whenever the player dont do an action
+	; exit: value to use to make an action with the robot tank
 	doPush ax,bx,cx
-	dec [moveEnemyTank]
-	cmp [moveEnemyTank], 0
-	jne return_fromRandomMove
-
+	dec [moveEnemyTank] ; Using to calculate the speed to prevent him from moving too fast
+	cmp [moveEnemyTank], 0 ; Comparing the speed value to 0 if equals set the speed back
+	jne return_fromRandomMove ; if not equals return from move without action value
 	mov cx, [moveEnemyTankSpeed]
-
 resetMovingValue:
 	mov [moveEnemyTank], cx
-
-RandLoop:
+RandLoop: ; Generating random number between 0,1,2
+	; 0 = move left
+	; 1 = move right
+	; 2 = shoot!
 	mov ax, 40h
 	mov es, ax
 randAgain:
@@ -63,9 +65,9 @@ randAgain:
 	mov ah, [byte cs:bx] 	; read one byte from memory
 	xor al, ah 			; xor memory and counter
 	and al, 3	; leave result between 0-2
-	cmp al,3
+	cmp al,3 ; if al contains 3 it's not good so go make another random number
 	je randAgain
-	mov [eTurnValue], al
+	mov [eTurnValue], al ; moving the random number into eTurnValue variable
 	inc bx
 return_fromRandomMove:
 	doPop cx,bx,ax
@@ -73,17 +75,16 @@ return_fromRandomMove:
 endp randomMove
 
 proc eMoveShot
+	; enter: calling the proc whenever the robot actions Shooting
+	; exit: the shot itself moving toward the player and checking for hit, misshit or death
 	doPush ax,bx,cx,dx
-
 	cmp [moveEnemyTankSpeed], 100
 	jne setShotCoords
-
 countShotsDelay:
 	cmp [shotWait], 0
 	je setShotCoords
 	dec [shotWait]
 	jmp returnFromShot88
-
 setShotCoords:
 	mov [shotWait], 1
 	mov dx, [enemyX]
@@ -104,14 +105,11 @@ goMoving88:
 	; output: moving the character and restoring the background and taking the new square the character is going to
 	mov bx, [eShotX] ; The current position of enemyX.
 	mov cx, [eShotY] ; The times we will need to loop for rows.
-
 createR88: ; Creating the row. Adding 320 to go to the next line
 	add bx, 320
 	loop createR88
-
 	mov [delayAmount], 40
 	call delay
-
 returnSqr88:
 	mov [eShotNewPos], bx ; The new position we got into newPos variable
 	mov di,[eShotOldPos]
@@ -142,21 +140,18 @@ returnSqr88:
 	mov [eShotOldPos], bx
 	add [eShotY], 13
 	dec [eShotLength]
-
 ; Read pixel value into al
 	mov bh,0h
 	mov cx,[eShotX]
 	mov dx,[eShotY]
 	mov ah,0Dh
 	int 10h
-
 checkIfHitPlayer:
 	cmp al, 0016
 	je hitPlayer
 	cmp [eShotLength], 0
 	je returnFromShot88
 	jmp goMoving88
-
 hitPlayer:
 	mov [note], 2000h
 	call playSound
@@ -169,7 +164,6 @@ hitPlayer:
 	mov bx,[eShotWidth]
 	mov [width_], bx
 	call retSqr
-
 refreshPlayersHP:
 	mov bh, 0
 	mov dh, 23
@@ -185,25 +179,13 @@ refreshPlayersHP:
 	cmp [playerHP], 0
 	je playerDead
 	jmp returnFromShot88
-
 playerDead:
-	mov ah,0Ch
-	mov al,0
-	int 21h
 	doPop dx,cx,bx,ax
 	jmp youLostScr
-
-continueShot:
-	mov ah,0Ch
-	mov al,0
-	int 21h
-	doPop dx,cx,bx,ax
-	ret
-
 returnFromShot88:
 	mov [eShotLength], 10
 	mov ah,0Ch
-	mov al,0
+  xor al,al
 	int 21h
 	doPop dx,cx,bx,ax
 	ret

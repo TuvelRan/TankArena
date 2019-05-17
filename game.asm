@@ -7,9 +7,7 @@ DATASEG
 ; ------------------------------
 
 	include "vars.asm" ; All variables for project
-
-
-	InputTime		dw 9999
+	InputTime		dw 9999 ; The time you got to input
 
 ; ------------------------------
 
@@ -31,7 +29,7 @@ start:
 	; Loading the mainScreen for the game
 mainScr:
 	mov [fileName], offset mainScrFile
-	call bmp
+	call bmp ; Printing the bmp for the main screen
 
 reciveInput:
 	; Get a key (1 symbol):
@@ -47,17 +45,17 @@ reciveInput:
 	je helpScr
 	cmp al, 69h
 	je helpScr
-	; Check if s key:
-	cmp al, 53h
-	je scoreList
-	cmp al, 73h
-	je scoreList
+	; Check if s key: Not Available Currently
+	; cmp al, 53h
+	; je scoreList
+	; cmp al, 73h
+	; je scoreList
 	; Check if esc key:
 	cmp al, 1Bh
 	je goEndProgram2
-	jmp reciveInput
+	jmp reciveInput ; Go check again as no input
 
-selectLvlScr:
+selectLvlScr: ; Select difficulty Screen
 	mov [fileName], offset selectLvlFile
 	call bmp
 reciveSelectInput:
@@ -85,19 +83,19 @@ reciveSelectInput:
 	jmp reciveSelectInput
 
 setDifficultyChoose1:
-	mov [selectedLvl], 1
-	mov [moveEnemyTankSpeed], 250
-	jmp level1Scr
+	mov [selectedLvl], 1 ; 1 means level1 has been selected
+	mov [moveEnemyTankSpeed], 250 ; the Speed of the tank for level1
+	jmp level1Scr ; goto start the level game
 
 setDifficultyChoose2:
-	mov [selectedLvl], 2
-	mov [moveEnemyTankSpeed], 100
-	jmp level1Scr
+	mov [selectedLvl], 2 ; 2 means level2 has been selected
+	mov [moveEnemyTankSpeed], 100 ; the Speed of the tank for level2
+	jmp level1Scr ; goto start the level game
 
 setDifficultyChoose3:
-	mov [selectedLvl], 3
-	mov [moveEnemyTankSpeed], 100
-	jmp level1Scr
+	mov [selectedLvl], 3 ; 3 means level3 has been selected
+	mov [moveEnemyTankSpeed], 100 ; the Speed of the tank for level3 same as hard
+	jmp level1Scr ; goto start the level game
 
 goEndProgram2:
 	jmp endProgram
@@ -118,8 +116,6 @@ getHelpInput:
 	cmp al, 1Bh
 	je gotoMainScr
 	jmp getHelpInput
-
-scoreList:
 
 pauseScr:
 	mov [fileName], offset pauseFile
@@ -148,21 +144,21 @@ getPauseInput:
 	je gotoSelectLvl
 	jmp getPauseInput
 
-gotoSelectLvl:
+gotoSelectLvl: ; shortcut for select level screen as it out of range
 	jmp selectLvlScr
 
-gotoPrintMap1:
+gotoPrintMap1: ; shortcut for printMap1 screen as it out of range
 	jmp printMap1
 
 resumeToLvl:
-	cmp [selectedLvl], 1
+	cmp [selectedLvl], 1 ; If level = 1 then resume to level1
 	je gotoPrintMap1
-	cmp [selectedLvl], 2
+	cmp [selectedLvl], 2 ; If level = 2 then resume to level2
 	je printMap2
-	cmp [selectedLvl], 3
+	cmp [selectedLvl], 3 ; If level = 3 then resume to level3
 	je printMap3
 
-gotoMainScr:
+gotoMainScr: ; shortcut for main screen as it out of range
 	jmp mainScr
 
 tryAgainScr:
@@ -192,18 +188,19 @@ tryAgainInput:
 gotoSelectLvlScr:
 	jmp selectLvlScr
 
-restartGame:
+restartGame: ; reset level1
 	mov [playerHP], 3
 	mov [enemyHP], 3
 
 level1Scr:
-	cmp [selectedLvl], 1
-	je startMap1
-	cmp [selectedLvl], 2
-	je startMap2
+	cmp [selectedLvl], 1 ; Check if level1 is selected
+	je startMap1 ; if so go to startMap1
+	cmp [selectedLvl], 2 ; Check if level2 is selected
+	je startMap2 ; if so go to startMap2
+	; else startMap3
 
 startMap3:
-	call startLvlAnimation
+	call impModeStart ; Start animation for level3 then set hitpoints
 	mov [playerHP], 1
 	mov [enemyHP], 7
 
@@ -213,7 +210,7 @@ printMap3:
 	jmp startGame
 
 startMap2:
-	call hardLvlStart
+	call hardLvlStart ; Start animation for level2 then set hitpoints
 	mov [playerHP], 1
 	mov [enemyHP], 5
 
@@ -223,7 +220,7 @@ printMap2:
 	jmp startGame
 
 startMap1:
-	call normalLvlStart
+	call normalLvlStart ; Start animation for level1 then set hitpoints
 	mov [playerHP], 3
 	mov [enemyHP], 3
 
@@ -355,38 +352,36 @@ contGetKey:
 	je gotoPause
 	jmp level1
 
-gotoControls:
+gotoControls: ; shortcut for controlls
 	jmp controlls
 
-gotoPause:
+gotoPause: ; shortcut for pause
 	jmp pauseScr
 
-goEndProgram:
-	; Shortcut to jump to label endProgram
+goEndProgram:	; Shortcut to jump to label endProgram
 	jmp endProgram
 
 arrowRight:
 	; Moving the player tank to right
-	cmp [x], 320-60
-	jae	level1
-	add [x], 40
-	call movePlayer
-	mov ah, 0Ch
-	xor al,al
-	int 21h
-	jmp level1
+	cmp [x], 320-60 ; check that the tank is not on the last-right block
+	jae	level1 ; if it is go to get another input
+	add [x], 40 ; else add to player [x] 40
+	call movePlayer ; move the player with the [x]
+	mov ah, 0Ch ; clean buffer
+	xor al,al ; clean buffer
+	int 21h ; clean buffer
+	jmp level1 ; goto get another input
 
 arrowLeft:
 	; Moving the player tank to left
-	sub [newPos], 25
-	cmp [x], 60
-	jbe	level1
-	sub [x], 40
-	call movePlayer
-	mov ah, 0Ch
-	xor al,al
-	int 21h
-	jmp level1
+	cmp [x], 60 ; check that the tank is not on the last-left block
+	jbe	level1 ; if it is go to get another input
+	sub [x], 40 ; else sub from player [x] 40
+	call movePlayer ; move the player with the [x]
+	mov ah, 0Ch ; clean buffer
+	xor al,al ; clean buffer
+	int 21h ; clean buffer
+	jmp level1 ; goto get another input
 
 ifSpaceShoot:
 	mov di,[newShotPos]
@@ -394,18 +389,18 @@ ifSpaceShoot:
 	mov cx,[pShotHeight]
 	mov bx,[pShotWidth]
 	mov [width_], bx
-	call takeSqr
-	call moveShot
+	call takeSqr ; Take the square that the shot is going to be on for restoration
+	call moveShot ; move the shot check hit not hit and death...
 	mov di,[oldShotPos]
 	mov si, offset shotScrKeep
 	mov cx,[pShotHeight]
 	mov bx,[pShotWidth]
 	mov [width_], bx
-	call retSqr
+	call retSqr ; return the square that the shot was on.
 	mov ah, 0Ch
 	xor al,al
 	int 21h
-	jmp level1
+	jmp level1 ; goto get another input
 
 controlls:
 	; if got 0 move enemy to left
@@ -418,7 +413,7 @@ controlls:
 	cmp [eTurnValue], 2
 	je enemyShoot
 
-enemyLeft:
+enemyLeft: ; same thing as applied to player but for the robot
 	; Moving the enemy tank to left
 	sub [newEnemyPos], 25
 	cmp [enemyX], 60
@@ -427,7 +422,7 @@ enemyLeft:
 	call eMoveWithSqr
 	jmp level1
 
-enemyRight:
+enemyRight: ; same thing as applied to player but for the robot
 	; Moving the enemy tank to right
 	cmp [enemyX], 320-60
 	jae	gotoMain
@@ -435,7 +430,7 @@ enemyRight:
 	call eMoveWithSqr
 	jmp level1
 
-enemyShoot:
+enemyShoot: ; same thing as applied to player but for the robot
 	; Making the enemy tank to shoot
 	mov di,[eShotNewPos]
 	mov si, offset eShotScrKeep
