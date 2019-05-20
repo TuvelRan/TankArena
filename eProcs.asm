@@ -28,7 +28,7 @@ returnSqr:
 	mov cx,[eTankHeight]
 	mov bx,[eTankWidth]
 	mov [width_], bx
-	call anding
+	call anding ; Printing the sprite
 	mov di,[newEnemyPos]
 	mov si, offset eTank
 	mov cx,[eTankHeight]
@@ -80,13 +80,13 @@ proc eMoveShot
 	doPush ax,bx,cx,dx
 	cmp [moveEnemyTankSpeed], 100
 	jne setShotCoords
-countShotsDelay:
+countShotsDelay: ; Using shot rate to minimize the tank precentage to shoot
 	cmp [shotWait], 0
 	je setShotCoords
 	dec [shotWait]
 	jmp returnFromShot88
-setShotCoords:
-	mov [shotWait], 1
+setShotCoords: ; Setting the shot parameters to get ready by using the robot (x,y)
+	mov [shotWait], 1 ; Reseting the shot rate back to 1
 	mov dx, [enemyX]
 	mov [eShotX], dx
 	add [eShotX], 9
@@ -129,7 +129,7 @@ returnSqr88:
 	mov cx,[eShotHeight]
 	mov bx,[eShotWidth]
 	mov [width_], bx
-	call anding
+	call anding ; Printing the sprite
 	mov di,[eShotNewPos]
 	mov si, offset eShot
 	mov cx,[eShotHeight]
@@ -140,7 +140,7 @@ returnSqr88:
 	mov [eShotOldPos], bx
 	add [eShotY], 13
 	dec [eShotLength]
-; Read pixel value into al
+	; Read pixel value into al
 	mov bh,0h
 	mov cx,[eShotX]
 	mov dx,[eShotY]
@@ -152,8 +152,8 @@ checkIfHitPlayer:
 	cmp [eShotLength], 0
 	je returnFromShot88
 	jmp goMoving88
-hitPlayer:
-	mov [note], 2000h
+hitPlayer: ; The code that need to be done to make sound remove the shot as it hits the player and decreasing HP
+	mov [note], 2000h ; Sound frequency
 	call playSound
 	call delay
 	call stopSound
@@ -164,7 +164,7 @@ hitPlayer:
 	mov bx,[eShotWidth]
 	mov [width_], bx
 	call retSqr
-refreshPlayersHP:
+refreshPlayersHP: ; Printing the updated HP status
 	mov bh, 0
 	mov dh, 23
 	mov dl, 0
@@ -176,12 +176,12 @@ refreshPlayersHP:
 	xor ax, ax
 	mov al, [playerHP]
 	call printNumber
-	cmp [playerHP], 0
-	je playerDead
+	cmp [playerHP], 0 ; Check if player HP equals to 0
+	je playerDead ; if it does then it means player is dead
 	jmp returnFromShot88
 playerDead:
 	doPop dx,cx,bx,ax
-	jmp youLostScr
+	jmp youLostScr ; goto lose screen
 returnFromShot88:
 	mov [eShotLength], 10
 	mov ah,0Ch

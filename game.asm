@@ -221,8 +221,8 @@ printMap2:
 
 startMap1:
 	call normalLvlStart ; Start animation for level1 then set hitpoints
-	mov [playerHP], 3
-	mov [enemyHP], 3
+	mov [playerHP], 5
+	mov [enemyHP], 5
 
 printMap1:
 	mov [fileName], offset gameBack
