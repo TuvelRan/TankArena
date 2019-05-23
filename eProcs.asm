@@ -11,29 +11,29 @@ createR: ; Creating the row. Adding 320 to go to the next line
 
 returnSqr:
 	mov [newEnemyPos], bx ; The new position we got into newEnemyPos variable
-	mov di,[oldEnemyPos]
-	mov si, offset eScrKeep
-	mov cx,[eTankHeight]
-	mov bx,[eTankWidth]
-	mov [width_], bx
+	mov di,[oldEnemyPos] ; setting the parameter in di for old position
+	mov si, offset eScrKeep ; setting the parameter of screen keeper in si
+	mov cx,[eTankHeight] ; moving to cx the tank height for the parameter
+	mov bx,[eTankWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
 	call retSqr ; Return last sqr to the old position
-	mov di,[newEnemyPos]
-	mov si, offset eScrKeep
-	mov cx,[eTankHeight]
-	mov bx,[eTankWidth]
-	mov [width_], bx
+	mov di,[newEnemyPos] ; setting the parameter in di for old position
+	mov si, offset eScrKeep ; setting the parameter of screen keeper in si
+	mov cx,[eTankHeight] ; moving to cx the tank height for the parameter
+	mov bx,[eTankWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
 	call takeSqr ; Taking new sqr from the newEnemyPos
-	mov di,[newEnemyPos]
-	mov si, offset eTankMask
-	mov cx,[eTankHeight]
-	mov bx,[eTankWidth]
-	mov [width_], bx
+	mov di,[newEnemyPos] ; setting the parameter in di for old position
+	mov si, offset eTankMask ; setting the parameter of screen keeper in si
+	mov cx,[eTankHeight] ; moving to cx the tank height for the parameter
+	mov bx,[eTankWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
 	call anding
-	mov di,[newEnemyPos]
-	mov si, offset eTank
-	mov cx,[eTankHeight]
-	mov bx,[eTankWidth]
-	mov [width_], bx
+	mov di,[newEnemyPos] ; setting the parameter in di for old position
+	mov si, offset eTank ; setting the parameter of screen keeper in si
+	mov cx,[eTankHeight] ; moving to cx the tank height for the parameter
+	mov bx,[eTankWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
 	call oring
 	mov bx, [newEnemyPos]
 	mov [oldEnemyPos], bx
@@ -78,115 +78,116 @@ proc eMoveShot
 	; enter: calling the proc whenever the robot actions Shooting
 	; exit: the shot itself moving toward the player and checking for hit, misshit or death
 	doPush ax,bx,cx,dx
-	cmp [moveEnemyTankSpeed], 100
-	jne setShotCoords
+	cmp [moveEnemyTankSpeed], 100 ; if the speed is on the hard level
+	jne setShotCoords ; if not shoot normaly without delay
 countShotsDelay:
-	cmp [shotWait], 0
-	je setShotCoords
-	dec [shotWait]
-	jmp returnFromShot88
+	cmp [shotWait], 0 ; check if the shot delay is equals to 0
+	je setShotCoords ; if it does go shoot and set the delay back
+	dec [shotWait] ; else decrease the shot delay for the next time
+	jmp returnFromShot88 ; go to return from shot. without shooting of course
 setShotCoords:
-	mov [shotWait], 1
-	mov dx, [enemyX]
-	mov [eShotX], dx
-	add [eShotX], 9
-	mov dx, [enemyY]
-	mov [eShotY], dx
-	add [eShotY], 45
-	mov cx, [eShotY]
+	mov [shotWait], 1 ; set the shot delay for the next time.
+	xor ax,ax ; clearing ax
+	mov dx, [enemyX] ; moving to dx the player x pos
+	mov [eShotX], dx ; moving to shotx the player x pos
+	add [eShotX], 9 ; adding 9 to the X to set in the center
+	mov dx, [enemyY] ; moving to dx the player y pos
+	mov [eShotY], dx ; moving to shoty the player y pos
+	add [eShotY], 45 ; substurcting 8 to the y to set in the center
+	mov cx, [eShotY] ; moving into cx the shotY
 eMulShotY:
-	add ax, 320
-	loop eMulShotY
+	add ax, 320 ; Adding into BX 320 (Line)
+	loop eMulShotY ; Looping the times to get the Y position on screen
 addXToResult88:
-	add ax, [eShotX]
-	mov [eShotNewPos], ax
+	add ax, [eShotX] ; adding the X into the result to get the X pos
+	mov [eShotNewPos], ax ; Ax now moving into newShotPos. to print the shot
 goMoving88:
 	; input: getting positions enemyY + enemyX
 	; output: moving the character and restoring the background and taking the new square the character is going to
 	mov bx, [eShotX] ; The current position of enemyX.
 	mov cx, [eShotY] ; The times we will need to loop for rows.
 createR88: ; Creating the row. Adding 320 to go to the next line
-	add bx, 320
+	add bx, 320 ; adding bx lines by Y times
 	loop createR88
-	mov [delayAmount], 40
-	call delay
+	mov [delayAmount], 8 ; Making a delay with custom one, 8 times
+	call delay ; do delay
 returnSqr88:
 	mov [eShotNewPos], bx ; The new position we got into newPos variable
-	mov di,[eShotOldPos]
-	mov si, offset eShotScrKeep
-	mov cx,[eShotHeight]
-	mov bx,[eShotWidth]
-	mov [width_], bx
+	mov di,[eShotOldPos] ; setting the parameter in di for old position
+	mov si, offset eShotScrKeep ; setting the parameter of screen keeper in si
+	mov cx,[eShotHeight] ; moving to cx the tank height for the parameter
+	mov bx,[eShotWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
 	call retSqr ; Return last sqr to the old position
-	mov di,[eShotNewPos]
-	mov si, offset eShotScrKeep
-	mov cx,[eShotHeight]
-	mov bx,[eShotWidth]
-	mov [width_], bx
+	mov di,[eShotNewPos] ; setting the parameter in di for old position
+	mov si, offset eShotScrKeep ; setting the parameter of screen keeper in si
+	mov cx,[eShotHeight] ; moving to cx the tank height for the parameter
+	mov bx,[eShotWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
 	call takeSqr ; Taking new sqr from the newPos
-	mov di,[eShotNewPos]
-	mov si, offset eShotMask
-	mov cx,[eShotHeight]
-	mov bx,[eShotWidth]
-	mov [width_], bx
-	call anding
-	mov di,[eShotNewPos]
-	mov si, offset eShot
-	mov cx,[eShotHeight]
-	mov bx,[eShotWidth]
-	mov [width_], bx
-	call oring
-	mov bx, [eShotNewPos]
-	mov [eShotOldPos], bx
-	add [eShotY], 13
-	dec [eShotLength]
+	mov di,[eShotNewPos] ; setting the parameter in di for old position
+	mov si, offset eShotMask ; setting the parameter of screen keeper in si
+	mov cx,[eShotHeight] ; moving to cx the tank height for the parameter
+	mov bx,[eShotWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
+	call anding ; print the sprite
+	mov di,[eShotNewPos] ; setting the parameter in di for old position
+	mov si, offset eShot ; setting the parameter of screen keeper in si
+	mov cx,[eShotHeight] ; moving to cx the tank height for the parameter
+	mov bx,[eShotWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
+	call oring ; print the sprite
+	mov bx, [eShotNewPos] ; Moving into bx the new pos we got
+	mov [eShotOldPos], bx ; setting it in the old pos for the next time
+	add [eShotY], 7 ; adding 7 to the shot y for the shooting to go
+	dec [eShotLength] ; decrease the shot length
 ; Read pixel value into al
 	mov bh,0h
-	mov cx,[eShotX]
-	mov dx,[eShotY]
-	mov ah,0Dh
+	mov cx,[eShotX] ; Read the color in this X spot
+	mov dx,[eShotY] ; Read the color in this Y spot
+	mov ah,0Dh ; Call the color pixel reader
 	int 10h
 checkIfHitPlayer:
-	cmp al, 0016
-	je hitPlayer
-	cmp [eShotLength], 0
-	je returnFromShot88
-	jmp goMoving88
+	cmp al, 0016 ; Compare to the tank color Pixel
+	je hitPlayer ; if the colour is equals to the robot colour it's a hit go to hitEnemy label
+	cmp [eShotLength], 0 ; else check if the shot has ended
+	je returnFromShot88 ; if it does return from shot and reset the shot parameters
+	jmp goMoving88 ; else the shot didn't ended go to goMoving label to continue the shot
 hitPlayer:
-	mov [note], 2000h
-	call playSound
-	call delay
-	call stopSound
-	dec [playerHP]
-	mov di,[eShotOldPos]
-	mov si, offset eShotScrKeep
-	mov cx,[eShotHeight]
-	mov bx,[eShotWidth]
-	mov [width_], bx
-	call retSqr
+	mov [note], 2000h ; sound frequency to make
+	call playSound ; play the sound of hit
+	call delay ; Do a small delay to make people hear the sound
+	call stopSound ; Stop the soun
+	dec [playerHP] ; decrease the player's health
+	mov di,[eShotOldPos] ; setting the parameter in di for old position
+	mov si, offset eShotScrKeep ; setting the parameter of screen keeper in si
+	mov cx,[eShotHeight] ; moving to cx the tank height for the parameter
+	mov bx,[eShotWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
+	call retSqr ; Remove the shot from the screen as the shot hit the player
 refreshPlayersHP:
 	mov bh, 0
-	mov dh, 23
-	mov dl, 0
-	mov ah, 2h
+	mov dh, 23 ; Y position of the text printed
+	mov dl, 0 ; X position of the text printed
+	mov ah, 2h ; set the cursor position
 	int 10h
-	mov	dx, offset playerHPtxt
-	mov ah, 9
+	mov	dx, offset playerHPtxt ; Use this text table for the printing
+	mov ah, 9 ; print the text
 	int 21h
 	xor ax, ax
-	mov al, [playerHP]
-	call printNumber
-	cmp [playerHP], 0
-	je playerDead
-	jmp returnFromShot88
+	mov al, [playerHP] ; the number we want to print from the variable
+	call printNumber ; print number at the last cursor position
+	cmp [playerHP], 0 ; check if the players's HP equals to 0
+	je playerDead ; if it does goto playerDead label
+	jmp returnFromShot88 ; else return from shot and reset the shot parameters
 playerDead:
 	doPop dx,cx,bx,ax
-	jmp youLostScr
+	jmp youLostScr ; go to lose Screen
 returnFromShot88:
-	mov [eShotLength], 10
-	mov ah,0Ch
-  xor al,al
-	int 21h
+	mov [eShotLength], 17 ; set the shot Length for the next time
+	mov ah,0Ch ; clear buffer
+  xor al,al ; clear buffer
+	int 21h ; clear buffer
 	doPop dx,cx,bx,ax
 	ret
 endp eMoveShot

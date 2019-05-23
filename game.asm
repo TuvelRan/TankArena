@@ -47,9 +47,9 @@ reciveInput:
 	je helpScr
 	; Check if s key: Not Available Currently
 	; cmp al, 53h
-	; je scoreList
+	; je scoreList, not available
 	; cmp al, 73h
-	; je scoreList
+	; je scoreList, not available
 	; Check if esc key:
 	cmp al, 1Bh
 	je goEndProgram2
@@ -179,9 +179,7 @@ tryAgainInput:
 	cmp al, 63h
 	je gotoSelectLvlScr
 	; Check if e key:
-	cmp al, 45h
-	je gotoMainScr
-	cmp al, 65h
+	cmp al, 1Bh
 	je gotoMainScr
 	jmp tryAgainInput
 
@@ -210,7 +208,7 @@ printMap3:
 	jmp startGame
 
 startMap2:
-	call hardLvlStart ; Start animation for level2 then set hitpoints
+	call hardLvlStart ; Start animation for level2 then set hitpoints
 	mov [playerHP], 1
 	mov [enemyHP], 5
 
@@ -312,7 +310,7 @@ showEnemysHP:
 	mov al, [enemyHP]
 	call printNumber
 
-	mov [shotLength], 10
+	mov [shotLength], 20
 	mov [score], 0
 
 level1:
@@ -454,31 +452,32 @@ gotoMain:
 wonScr:
 	mov [fileName], offset wonFile
 	call bmp
-	inc [score]
+	inc [score] ; increase the score for the last shot
 	call printScore
 	; Block spamming to skip the screen
-	mov [cDelayAmount], 15
+	mov [cDelayAmount], 15 ; clock delay amount
 	call clockDelay
-	mov ah,0Ch
-	mov al,0
-	int 21h
+	mov ah,0Ch ; clear buffer
+	xor al,al ; clear buffer
+	int 21h ; clear buffer
 	; Wait for any key
-	mov ax, 13
-	int 16h
+	mov ax, 13; Wait for any key
+	int 16h; Wait for any key
 	jmp tryAgainScr
 
 youLostScr:
 	mov [fileName], offset lostFile
 	call bmp
+	call printScore
 	; Block spamming to skip the screen
-	mov [cDelayAmount], 15
+	mov [cDelayAmount], 15 ; clock delay amount
 	call clockDelay
-	mov ah,0Ch
-	mov al,0
-	int 21h
+	mov ah,0Ch ; clear buffer
+	xor al,al ; clear buffer
+	int 21h ; clear buffer
 	; Wait for any key
-	mov ax, 13
-	int 16h
+	mov ax, 13; Wait for any key
+	int 16h; Wait for any key
 	jmp tryAgainScr
 
 endProgram:
