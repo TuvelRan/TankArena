@@ -59,6 +59,7 @@
 		playerHP		db 3 ; Player's hitpoints
 		hitEnemyShot	db 0 ; If equals to 1 it means the player has hit the robot
 		scrKeep			db 99*57 dup(?) ; Keeping the screen of the oldPos for The player
+		shotLength		dw 20 ; Player's shot length
 ;------------------------------------------------------------------------------------------------------------------
 ; All variables that affect the enemy (robot):
 		eTurnValue 		db ? ; The random robot move, each number move to other side
@@ -68,8 +69,7 @@
 		eShotOldPos		dw ? ; Position to
 		eShotHeight		dw 8 ; Enemys shot height
 		eShotWidth		dw 3 ; Enemys shot width
-		shotLength		dw 10 ; Player's shot length
-		eShotLength		dw 10 ; Enemy's shot length
+		eShotLength		dw 17 ; Enemy's shot length
 		eShotScrKeep	db 99*57 dup(?) ; enemy shot scrKeep
 		newEnemyPos		dw ? ; Recent enemy position to use later to restore location
 		oldEnemyPos		dw ? ; Position to return the scrKeep to
@@ -85,7 +85,7 @@
 		moveEnemyTankSpeed	dw	? ; Variable to compare to 0 for actions, Will change for some levels
 ;------------------------------------------------------------------------------------------------------------------
 ; All text variables that use to print the text:
-		scoretxt		db 'You Won With Shooting: ','$' ; Used to print the score.
+		scoretxt		db 'You Shot: ','$' ; Used to print the score.
 		playerHPtxt		db 'HP: ','$' ; Variable for printing the player's HP
 		enemyHPtxt		db 'HP: ','$' ; Variable for printing the enemy's HP
 		goodByeMsg 		db 'Thank you for playing$' ; When closing the game this message will appear

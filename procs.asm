@@ -6,12 +6,12 @@ proc printNumber
 nextDigit:
 	xor ah,ah 	; dx:ax = number
 	div [byte ptr bx]	 ; al = quotient, ah = remainder
-	add al,'0'
+	add al,'0' ; Adding the ascii of '0'
 	call printCharacter 	; Display the quotient
 	mov al,ah 	; ah = remainder
 	add bx,1 		; bx = address of next divisor
 	cmp [byte ptr bx],0 ; Have all divisors been done?
-	jne nextDigit
+	jne nextDigit ; if not equals got and get again
 	mov ah,2
 	mov dl,13
 	int 21h
@@ -41,15 +41,15 @@ proc anding
 
 and1:
 	push cx
-	mov cx,[width_]
+	mov cx,[width_] ; Moving the global width variable set for the mask called
 
 xx1:
-	lodsb
+	lodsb ; MOV AL, DS:[SI] INC SI
 	and [es:di],al
-	inc di
+	inc di ; increase di
 	loop xx1
-	add di, 320
-	sub di, [width_]
+	add di, 320 ; add another line to di
+	sub di, [width_] ; remove the width value of di
 	pop cx
 	loop and1
 	doPop cx, si, di, es, ax
@@ -65,15 +65,15 @@ proc oring
 
 or1:
 	push cx
-	mov cx,[width_]
+	mov cx,[width_] ; Moving the global width variable set for the mask called
 
 yy1:
-	lodsb
+	lodsb ; MOV AL, DS:[SI] INC SI
 	or [es:di],al
-	inc di
+	inc di ; increase di
 	loop yy1
-	add di, 320
-	sub di, [width_]
+	add di, 320 ; add another line to di
+	sub di, [width_] ; remove the width value of di
 	pop cx
 	loop or1
 	doPop cx, si, di, es, ax
@@ -89,16 +89,16 @@ proc takeSqr
 
 takeLine1:
 	push cx
-	mov cx, [width_]
+	mov cx, [width_] ; Moving the global width variable set for the mask called
 
 takeCol1:
 	mov al, [es:di]
 	mov [si], al
 	inc si
-	inc di
+	inc di ; increase di
 	loop takeCol1
-	add di, 320
-	sub di, [width_]
+	add di, 320 ; add another line to di
+	sub di, [width_] ; remove the width value of di
 	pop cx
 	loop takeLine1
 	doPop cx, di, si, ax, es
@@ -113,15 +113,15 @@ proc retSqr
 	mov es,ax
 retLine:
 	push cx
-	mov cx, [width_]
+	mov cx, [width_] ; Moving the global width variable set for the mask called
 retCol:
 	mov al, [si]
 	mov [es:di], al
 	inc si
-	inc di
+	inc di ; increase di
 	loop retCol
-	add di, 320
-	sub di, [width_]
+	add di, 320 ; add another line to di
+	sub di, [width_] ; remove the width value of di
 	pop cx
 	loop retLine
 	doPop cx, di, si, ax, es
@@ -136,47 +136,47 @@ proc movePlayer
 
 createR2: ; Creating the row. Adding 320 to go to the next line
 	add bx, 320
-	loop createR2
+	loop createR2 ; Loop counter = [y]
 
-FirstTick1:
-	cmp ax, [Clock]
-	je FirstTick1
-	mov cx, 1
+FirstTick1: ; counting first tick
+	cmp ax, [Clock] ; comparing the value of ticks to the first tick
+	je FirstTick1 ; if equals the tick hasn't changed go check again
+	mov cx, 1 ; mov CX, The time we want the delay to work
 DelayLoop1:
-	mov ax, [Clock]
+	mov ax, [Clock] ; move to ax, the value of ticks the amount of time we need
 Tick1:
-	cmp ax, [Clock]
-	je Tick1
-	loop DelayLoop1
+	cmp ax, [Clock] ; compare to clock
+	je Tick1 ; if the tick hasn't change go check again
+	loop DelayLoop1 ; if the tick has changed go to get another tick
 	doPush bx, cx
 returnSqr2:
 	mov [newPos], bx ; The new position we got into newPos variable
-	mov di,[oldPos]
-	mov si, offset ScrKeep
-	mov cx,[tankHeight]
-	mov bx,[tankWidth]
-	mov [width_],bx
+	mov di,[oldPos] ; setting the parameter in di for old position
+	mov si, offset ScrKeep ; setting the parameter of screen keeper in si
+	mov cx,[tankHeight] ; moving to cx the tank height for the parameter
+	mov bx,[tankWidth] ; getting the width and moving it into bx
+	mov [width_],bx ; moving the width in bx into a global width variable
 	call retSqr ; Return last sqr to the old position
-	mov di,[newPos]
-	mov si, offset scrKeep
-	mov cx,[tankHeight]
-	mov bx,[tankWidth]
-	mov [width_], bx
+	mov di,[newPos] ; setting the parameter in di for old position
+	mov si, offset scrKeep ; setting the parameter of screen keeper in si
+	mov cx,[tankHeight] ; moving to cx the tank height for the parameter
+	mov bx,[tankWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
 	call takeSqr ; Taking new sqr from the newPos
-	mov di,[newPos]
-	mov si, offset pTankMask
-	mov cx,[tankHeight]
-	mov bx,[tankWidth]
-	mov [width_], bx
-	call anding
-	mov di,[newPos]
-	mov si, offset pTank
-	mov cx,[tankHeight]
-	mov bx,[tankWidth]
-	mov [width_], bx
-	call oring
-	mov bx, [newPos]
-	mov [oldPos], bx
+	mov di,[newPos] ; setting the parameter in di for old position
+	mov si, offset pTankMask ; setting the parameter of screen keeper in si
+	mov cx,[tankHeight] ; moving to cx the tank height for the parameter
+	mov bx,[tankWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
+	call anding ; printing the sprite
+	mov di,[newPos] ; setting the parameter in di for old position
+	mov si, offset pTank ; setting the parameter of screen keeper in si
+	mov cx,[tankHeight] ; moving to cx the tank height for the parameter
+	mov bx,[tankWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
+	call oring ; printing the sprite
+	mov bx, [newPos] ; move into bx the new position of the sprite
+	mov [oldPos], bx ; move the new pos to be used in the old pos next time
 	doPop cx, bx
 	ret
 endp movePlayer
@@ -186,96 +186,97 @@ proc moveShot
 	; exit: the shot itself moving toward the robot and checking for hit, misshit or death
 	doPush ax,bx,cx,dx
 	; Setting all of the x and y parameters from the tank to use for the shot
-	mov dx, [x]
-	mov [shotX], dx
-	add [shotX], 9
-	mov dx, [y]
-	mov [shotY], dx
-	sub [shotY], 8
-	mov cx, [shotY]
+	xor ax,ax ; clearing ax
+	mov dx, [x] ; moving to dx the player x pos
+	mov [shotX], dx ; moving to shotx the player x pos
+	add [shotX], 9 ; adding 9 to the X to set in the center
+	mov dx, [y] ; moving to dx the player y pos
+	mov [shotY], dx ; moving to shoty the player y pos
+	sub [shotY], 8 ; substurcting 8 to the y to set in the center
+	mov cx, [shotY] ; moving into cx the shotY
 mulShotY:
-	add ax, 320
-	loop mulShotY
+	add ax, 320 ; Adding into BX 320 (Line)
+	loop mulShotY ; Looping the times to get the Y position on screen
 addXToResult:
-	add ax, [shotX]
-	mov [newShotPos], ax
+	add ax, [shotX] ; adding the X into the result to get the X pos
+	mov [newShotPos], ax ; Ax now moving into newShotPos. to print the shot
 goMoving:
 	; input: getting positions y + x
 	; output: moving the character and restoring the background and taking the new square the character is going to
 	mov bx, [shotX] ; The current position of X.
 	mov cx, [shotY] ; The times we will need to loop for rows.
 createR12: ; Creating the row. Adding 320 to go to the next line
-	add bx, 320
+	add bx, 320 ; adding bx lines by Y times
 	loop createR12
-	mov [delayAmount], 40
-	call delay
+	mov [delayAmount], 8 ; Making a delay with custom one, 8 times
+	call delay ; do delay
 returnSqr12:
 	mov [newShotPos], bx ; The new position we got into newPos variable
-	mov di,[oldShotPos]
-	mov si, offset shotScrKeep
-	mov cx,[pShotHeight]
-	mov bx,[pShotWidth]
-	mov [width_], bx
+	mov di,[oldShotPos] ; setting the parameter in di for old position
+	mov si, offset shotScrKeep ; setting the parameter of screen keeper in si
+	mov cx,[pShotHeight] ; moving to cx the tank height for the parameter
+	mov bx,[pShotWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
 	call retSqr ; Return last sqr to the old position
-	mov di,[newShotPos]
-	mov si, offset shotScrKeep
-	mov cx,[pShotHeight]
-	mov bx,[pShotWidth]
-	mov [width_], bx
+	mov di,[newShotPos] ; setting the parameter in di for old position
+	mov si, offset shotScrKeep ; setting the parameter of screen keeper in si
+	mov cx,[pShotHeight] ; moving to cx the tank height for the parameter
+	mov bx,[pShotWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
 	call takeSqr ; Taking new sqr from the newPos
-	mov di,[newShotPos]
-	mov si, offset pShotMask
-	mov cx,[pShotHeight]
-	mov bx,[pShotWidth]
-	mov [width_], bx
-	call anding
-	mov di,[newShotPos]
-	mov si, offset pShot
-	mov cx,[pShotHeight]
-	mov bx,[pShotWidth]
-	mov [width_], bx
+	mov di,[newShotPos] ; setting the parameter in di for old position
+	mov si, offset pShotMask ; setting the parameter of screen keeper in si
+	mov cx,[pShotHeight] ; moving to cx the tank height for the parameter
+	mov bx,[pShotWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
+	call anding ; printing the sprite
+	mov di,[newShotPos] ; setting the parameter in di for old position
+	mov si, offset pShot ; setting the parameter of screen keeper in si
+	mov cx,[pShotHeight] ; moving to cx the tank height for the parameter
+	mov bx,[pShotWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
 	call oring
-	mov bx, [newShotPos]
-	mov [oldShotPos], bx
-	sub [shotY], 13
-	dec [shotLength]
+	mov bx, [newShotPos] ; Moving into bx the new pos we got
+	mov [oldShotPos], bx ; setting it in the old pos for the next time
+	sub [shotY], 5 ; sub 5 from shot y to make the shot going
+	dec [shotLength] ; decrease Shot Length
 ; Read pixel value into al
 	mov bh,0h
-	mov cx,[shotX]
-	mov dx,[shotY]
-	mov ah,0Dh
+	mov cx,[shotX] ; Read the color in this X spot
+	mov dx,[shotY] ; Read the color in this Y spot
+	mov ah,0Dh ; Call the color pixel reader
 	int 10h
-checkIfHit: ; check if the shotX and shotY equals to the color of the robot
-	cmp al, 0077
-	je hitEnemy ; if the color is equals to the robot color it's a hit go to hitEnemy label
+checkIfHit: ; check if the shotX and shotY equals to the colour of the robot
+	cmp al, 0077 ; Compare to the tank color Pixel
+	je hitEnemy ; if the colour is equals to the robot colour it's a hit go to hitEnemy label
 	cmp [shotLength], 0 ; else check if the shot has ended
 	je returnFromShot ; if it does return from shot and reset the shot parameters
 	jmp goMoving ; else the shot didn't ended go to goMoving label to continue the shot
 hitEnemy:
-	mov [note], 2000h
+	mov [note], 2000h ; sound frequency to make
 	call playSound ; play the sound of hit
-	call delay
-	call stopSound
+	call delay ; Do a small delay to make people hear the sound
+	call stopSound ; Stop the sound
 	dec [enemyHP] ; decrease the robot's health
-	mov di,[oldShotPos]
-	mov si, offset shotScrKeep
-	mov cx,[pShotHeight]
-	mov bx,[pShotWidth]
-	mov [width_], bx
+	mov di,[oldShotPos] ; setting the parameter in di for old position
+	mov si, offset shotScrKeep ; setting the parameter of screen keeper in si
+	mov cx,[pShotHeight] ; moving to cx the tank height for the parameter
+	mov bx,[pShotWidth] ; getting the width and moving it into bx
+	mov [width_], bx ; moving the width in bx into a global width variable
 	call retSqr ; Remove the shot from the screen as the shot hit the player
 	mov [hitEnemyShot],1 ; used only for the impossible MODE
 refreshEnemyHPtxt: ; Printing the robot's HP counter to update his status
 	mov bh, 0
-	mov dh, 1
-	mov dl, 0
-	mov ah, 2h
+	mov dh, 1 ; Y position of the text printed
+	mov dl, 0 ; X position of the text printed
+	mov ah, 2h ; set the cursor position
 	int 10h
-	mov	dx, offset enemyHPtxt
-	mov ah, 9
+	mov	dx, offset enemyHPtxt ; Use this text table for the printing
+	mov ah, 9 ; print the text
 	int 21h
 	xor ax, ax
-	mov al, [enemyHP]
-	call printNumber
+	mov al, [enemyHP] ; the number we want to print from the variable
+	call printNumber ; print number at the last cursor position
 	cmp [enemyHP], 0 ; check if the robot's HP equals to 0
 	je enemyDead ; if it does goto enemyDead label
 	jmp returnFromShot ; else return from shot and reset the shot parameters
@@ -293,7 +294,7 @@ impModeHP:
 fullyReturn:
 	mov [hitEnemyShot],0 ; make hit status equals to 0
 	inc [score] ; inc the score (shot counter)
-	mov [shotLength], 10 ; reset the shot length value
+	mov [shotLength], 20 ; reset the shot length value
 	doPop dx,cx,bx,ax
 	ret
 endp moveShot
@@ -303,11 +304,11 @@ proc delay
 	; exit: when the loop is over
 	push cx
 setDelayParameter:
-	mov cx, 60000
+	mov cx, 60000 ; biggest loop we can possibly do
 delayLooper:
-	loop delayLooper
+	loop delayLooper ; loop
 	dec [delayAmount]
-	cmp [delayAmount], 0
+	cmp [delayAmount], 0 ; use the delay amount for the times
 	ja setDelayParameter
 	pop cx
 	ret
@@ -357,7 +358,7 @@ proc clockDelay
 FirstTick:
 	cmp ax, [Clock]
 	je FirstTick
-	mov cx, [cDelayAmount]
+	mov cx, [cDelayAmount] ; same as all clock delays moving the time to use
 DelayLoop:
 	mov ax, [Clock]
 Tick:
@@ -373,25 +374,25 @@ proc hardLvlStart
 	; exit: after animation has ended going to start the game
 	mov [fileName], offset getRdy2File
 	call bmp
-	mov [note], 7000h
-	call playSound
-	mov [cDelayAmount], 3
+	mov [note], 7000h ; sound frequency
+	call playSound ; play sound
+	mov [cDelayAmount], 3 ; do delay of playing sound
 	call clockDelay
-	call stopSound
+	call stopSound ; stop sound
 	call clockDelay
-	mov [note], 4000h
-	call playSound
-	mov [cDelayAmount], 3
+	mov [note], 4000h ; sound frequency
+	call playSound ; play sound
+	mov [cDelayAmount], 3 ; do delay of playing sound
 	call clockDelay
-	call stopSound
+	call stopSound ; stop sound
 	call clockDelay
 	mov [fileName], offset rdyGo2File
 	call bmp
-	mov [note], 2500h
-	call playSound
-	mov [cDelayAmount], 3
+	mov [note], 2500h ; sound frequency
+	call playSound ; play sound
+	mov [cDelayAmount], 3 ; do delay of playing sound
 	call clockDelay
-	call stopSound
+	call stopSound ; stop sound
 	call clockDelay
 	ret
 endp hardLvlStart
@@ -401,25 +402,25 @@ proc normalLvlStart
 ; exit: after animation has ended going to start the game
 	mov [fileName], offset getRdy1File
 	call bmp
-	mov [note], 7000h
-	call playSound
-	mov [cDelayAmount], 3
+	mov [note], 7000h ; sound frequency
+	call playSound ; play sound
+	mov [cDelayAmount], 3 ; do delay of playing sound
 	call clockDelay
-	call stopSound
+	call stopSound ; stop sound
 	call clockDelay
-	mov [note], 4000h
-	call playSound
-	mov [cDelayAmount], 3
+	mov [note], 4000h ; sound frequency
+	call playSound ; play sound
+	mov [cDelayAmount], 3 ; do delay of playing sound
 	call clockDelay
-	call stopSound
+	call stopSound ; stop sound
 	call clockDelay
 	mov [fileName], offset rdyGo1File
 	call bmp
-	mov [note], 2500h
-	call playSound
-	mov [cDelayAmount], 3
+	mov [note], 2500h ; sound frequency
+	call playSound ; play sound
+	mov [cDelayAmount], 3 ; do delay of playing sound
 	call clockDelay
-	call stopSound
+	call stopSound ; stop sound
 	call clockDelay
 	ret
 endp normalLvlStart
@@ -429,25 +430,25 @@ proc impModeStart
 ; exit: after animation has ended going to start the game
 	mov [fileName], offset getRdy3File
 	call bmp
-	mov [note], 7000h
-	call playSound
-	mov [cDelayAmount], 3
+	mov [note], 7000h ; sound frequency
+	call playSound ; play sound
+	mov [cDelayAmount], 3 ; do delay of playing sound
 	call clockDelay
-	call stopSound
+	call stopSound ; stop sound
 	call clockDelay
-	mov [note], 4000h
-	call playSound
-	mov [cDelayAmount], 3
+	mov [note], 4000h ; sound frequency
+	call playSound ; play sound
+	mov [cDelayAmount], 3 ; do delay of playing sound
 	call clockDelay
-	call stopSound
+	call stopSound ; stop sound
 	call clockDelay
 	mov [fileName], offset rdyGo3File
 	call bmp
-	mov [note], 2500h
-	call playSound
-	mov [cDelayAmount], 3
+	mov [note], 2500h ; sound frequency
+	call playSound ; play sound
+	mov [cDelayAmount], 3 ; do delay of playing sound
 	call clockDelay
-	call stopSound
+	call stopSound ; stop sound
 	call clockDelay
 	ret
 endp impModeStart
@@ -456,16 +457,16 @@ proc printScore
 	; enter: printing the score on the screen
 	; exit: score printed
 	mov bh, 0
-	mov dh, 22
-	mov dl, 8
-	mov ah, 2h
+	mov dh, 22 ; x of the cursor pos
+	mov dl, 14 ; y of the cursor pos
+	mov ah, 2h ; set the cursor position
 	int 10h
-	mov	dx, offset scoretxt
-	mov ah, 9
+	mov	dx, offset scoretxt ; use this text as the table
+	mov ah, 9 ; print the text
 	int 21h
 	xor ax, ax
-	mov al, [score]
-	call printNumber
+	mov al, [score] ; use score as the number
+	call printNumber ; print the number at the last cursor position
 	ret
 endp printScore
 
@@ -473,17 +474,17 @@ proc printPlayersHP
 	; enter: called to print the HP of the enemy used in moveShot
 	; exit: hp printed and refreshed
 	doPush ax,dx
-	mov bh, 0
-	mov dh, 1
-	mov dl, 0
-	mov ah, 2h
+	xor bh,bh
+	mov dh, 1 ; x of the cursor pos
+	xor dl,dl ; y of the cursor pos
+	mov ah, 2h ; set the cursor position
 	int 10h
-	mov	dx, offset enemyHPtxt
-	mov ah, 9
+	mov	dx, offset enemyHPtxt ; use this text as the table
+	mov ah, 9 ; print the text
 	int 21h
 	xor ax, ax
-	mov al, [enemyHP]
-	call printNumber
+	mov al, [enemyHP] ; use score as the number
+	call printNumber ; print the number at the last cursor position
 	doPop dx,ax
 	ret
 endp printPlayersHP
