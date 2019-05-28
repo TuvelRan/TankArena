@@ -84,17 +84,17 @@ reciveSelectInput:
 
 setDifficultyChoose1:
 	mov [selectedLvl], 1 ; 1 means level1 has been selected
-	mov [moveEnemyTankSpeed], 250 ; the Speed of the tank for level1
+	mov [moveEnemyTankSpeed], 350 ; the Speed of the tank for level1
 	jmp level1Scr ; goto start the level game
 
 setDifficultyChoose2:
 	mov [selectedLvl], 2 ; 2 means level2 has been selected
-	mov [moveEnemyTankSpeed], 100 ; the Speed of the tank for level2
+	mov [moveEnemyTankSpeed], 200 ; the Speed of the tank for level2
 	jmp level1Scr ; goto start the level game
 
 setDifficultyChoose3:
 	mov [selectedLvl], 3 ; 3 means level3 has been selected
-	mov [moveEnemyTankSpeed], 100 ; the Speed of the tank for level3 same as hard
+	mov [moveEnemyTankSpeed], 125 ; the Speed of the tank for level3 same as hard
 	jmp level1Scr ; goto start the level game
 
 goEndProgram2:

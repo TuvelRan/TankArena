@@ -78,7 +78,9 @@ proc eMoveShot
 	; enter: calling the proc whenever the robot actions Shooting
 	; exit: the shot itself moving toward the player and checking for hit, misshit or death
 	doPush ax,bx,cx,dx
-	cmp [moveEnemyTankSpeed], 100 ; if the speed is on the hard level
+	cmp [moveEnemyTankSpeed], 125 ; if the speed is on the hard level
+	jne setShotCoords
+	cmp [moveEnemyTankSpeed], 200
 	jne setShotCoords ; if not shoot normaly without delay
 countShotsDelay:
 	cmp [shotWait], 0 ; check if the shot delay is equals to 0
